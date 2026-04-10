@@ -1,0 +1,76 @@
+# docker-compose.yml
+# BrewPOS — Full stack local development with Docker
+# Usage: docker-compose up --build
+
+version: '3.8'
+
+services:
+  # ── PostgreSQL Database ────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: brewpos_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       brewpos
+      POSTGRES_USER:     postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d brewpos"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Express.js Backend ─────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: brewpos_api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "4000:4000"
+    environment:
+      NODE_ENV:        development
+      PORT:            4000
+      DB_HOST:         db
+      DB_PORT:         5432
+      DB_NAME:         brewpos
+      DB_USER:         postgres
+      DB_PASSWORD:     postgres
+      JWT_SECRET:      local-dev-secret-change-in-production
+      JWT_EXPIRES_IN:  8h
+      TAX_RATE:        0.12
+      ALLOWED_ORIGINS: http://localhost:3000
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  # ── Next.js Frontend ───────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: brewpos_web
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:4000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+
+volumes:
+  postgres_data:

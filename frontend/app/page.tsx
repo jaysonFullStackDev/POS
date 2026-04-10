@@ -1,0 +1,8 @@
+// app/page.tsx
+// Root redirect → login or dashboard
+
+import { redirect } from 'next/navigation';
+
+export default function RootPage() {
+  redirect('/login');
+}

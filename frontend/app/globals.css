@@ -1,0 +1,76 @@
+/* app/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brew-primary:   #c97f3a;
+  --brew-dark:      #663620;
+  --brew-cream:     #fdf8f3;
+  --brew-espresso:  #3d2012;
+}
+
+@layer base {
+  html {
+    font-family: system-ui, -apple-system, sans-serif;
+    background-color: #fdf8f3;
+  }
+
+  body {
+    @apply text-espresso-900 antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: Georgia, Cambria, serif;
+  }
+}
+
+@layer components {
+  /* Smooth scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #f9eddf; }
+  ::-webkit-scrollbar-thumb { background: #c97f3a; border-radius: 3px; }
+
+  /* Card base */
+  .card {
+    @apply bg-white rounded-2xl shadow-sm border border-brew-100;
+  }
+
+  /* Primary button */
+  .btn-primary {
+    @apply bg-brew-600 hover:bg-brew-700 text-white font-semibold
+           px-4 py-2 rounded-xl transition-colors duration-150
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Secondary button */
+  .btn-secondary {
+    @apply bg-brew-50 hover:bg-brew-100 text-brew-800 font-semibold
+           px-4 py-2 rounded-xl border border-brew-200
+           transition-colors duration-150;
+  }
+
+  /* Input field */
+  .input {
+    @apply w-full border border-brew-200 rounded-xl px-3 py-2
+           text-sm focus:outline-none focus:ring-2 focus:ring-brew-400
+           bg-white placeholder-brew-300;
+  }
+
+  /* Table */
+  .table-row-hover {
+    @apply hover:bg-brew-50 transition-colors duration-100;
+  }
+
+  /* Badge */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+}
+
+/* Print styles for receipts */
+@media print {
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
+  body { background: white; }
+}
