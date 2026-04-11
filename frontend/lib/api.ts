@@ -84,6 +84,16 @@ export const api = {
     get: (id: string) => apiFetch<any>(`/sales/${id}`),
   },
 
+  // ── Orders / Kitchen ──────────────────────────────────────
+  orders: {
+    active: () => apiFetch<any[]>('/orders/active'),
+    updateStatus: (id: string, status: string) =>
+      apiFetch<any>(`/orders/${id}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
+      }),
+  },
+
   // ── Inventory ─────────────────────────────────────────────
   inventory: {
     ingredients: {

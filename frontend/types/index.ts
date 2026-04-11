@@ -130,6 +130,19 @@ export interface StockMovement {
   created_at: string;
 }
 
+// ── Kitchen / Orders ──────────────────────────────────────
+export type OrderStatus = 'pending' | 'preparing' | 'ready' | 'completed';
+
+export interface KitchenOrder {
+  id: string;
+  sale_number: string;
+  order_status: OrderStatus;
+  created_at: string;
+  notes?: string;
+  cashier_name?: string;
+  items: { product_name: string; quantity: number }[];
+}
+
 // ── Reports ───────────────────────────────────────────────
 export interface SalesSummaryRow {
   period: string;

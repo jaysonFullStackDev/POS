@@ -12,9 +12,9 @@ const pool = new Pool({
   user:     process.env.DB_USER     || 'postgres',
   password: process.env.DB_PASSWORD || '',
   // Keep connections alive and limit pool size
-  max: 10,
+  max: parseInt(process.env.DB_POOL_MAX) || 50,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 5000,
   // For Supabase/SSL connections, uncomment:
   // ssl: { rejectUnauthorized: false }
 });

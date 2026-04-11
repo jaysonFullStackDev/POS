@@ -11,6 +11,7 @@ import clsx from 'clsx';
 const NAV = [
   { href: '/dashboard',          label: 'Dashboard',    icon: '📊', roles: ['admin','manager','cashier'] },
   { href: '/pos',                label: 'Point of Sale', icon: '🛒', roles: ['admin','manager','cashier'] },
+  { href: '/kitchen',            label: 'Kitchen',       icon: '👨🍳', roles: ['admin','manager','cashier'] },
   { href: '/pos/history',        label: 'Sales History', icon: '🧾', roles: ['admin','manager','cashier'] },
   { href: '/inventory',          label: 'Inventory',     icon: '📦', roles: ['admin','manager'] },
   { href: '/inventory/products', label: 'Products',      icon: '☕', roles: ['admin','manager'] },

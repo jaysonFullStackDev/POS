@@ -114,7 +114,18 @@ const processSale = async (req, res) => {
     }
 
     for (const [ingredientId, qty] of Object.entries(ingredientDeductions)) {
-      // Update stock
+      // Lock row to prevent race conditions between concurrent orders
+      const stockRes = await client.query(
+        `SELECT name, stock_qty, unit FROM ingredients WHERE id = $1 FOR UPDATE`,
+        [ingredientId]
+      );
+      const ing = stockRes.rows[0];
+      if (!ing) throw new Error(`Ingredient ${ingredientId} not found`);
+      if (parseFloat(ing.stock_qty) < qty) {
+        throw new Error(`Insufficient stock for "${ing.name}": need ${qty}${ing.unit}, only ${ing.stock_qty}${ing.unit} left`);
+      }
+
+      // Deduct stock
       await client.query(
         `UPDATE ingredients SET stock_qty = stock_qty - $1 WHERE id = $2`,
         [qty, ingredientId]
@@ -130,7 +141,24 @@ const processSale = async (req, res) => {
 
     await client.query('COMMIT');
 
-    // --- 7. Return full receipt data ---
+    // --- 7. Emit real-time event for Kitchen Display ---
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('order:new', {
+        id: sale.id,
+        sale_number,
+        order_status: 'pending',
+        created_at: sale.created_at,
+        notes: notes || null,
+        cashier_name: req.user.name,
+        items: items.map(item => ({
+          product_name: productMap[item.product_id].name,
+          quantity: item.quantity,
+        })),
+      });
+    }
+
+    // --- 8. Return full receipt data ---
     const receipt = {
       ...sale,
       items: items.map(item => ({
@@ -147,7 +175,13 @@ const processSale = async (req, res) => {
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('Sale error:', err);
-    res.status(500).json({ error: err.message || 'Failed to process sale' });
+
+    if (err.constraint === 'stock_qty_non_negative') {
+      return res.status(409).json({ error: 'Insufficient ingredient stock. Another order may have just used the last of it.' });
+    }
+
+    const status = err.message?.includes('Insufficient stock') ? 409 : 500;
+    res.status(status).json({ error: err.message || 'Failed to process sale' });
   } finally {
     client.release();
   }

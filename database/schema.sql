@@ -56,7 +56,7 @@ CREATE TABLE ingredients (
   id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name            VARCHAR(150) NOT NULL,
   unit            VARCHAR(20) NOT NULL,        -- g, ml, pcs, kg, L
-  stock_qty       DECIMAL(10,3) DEFAULT 0,
+  stock_qty       DECIMAL(10,3) DEFAULT 0 CHECK (stock_qty >= 0),
   low_stock_alert DECIMAL(10,3) DEFAULT 100,   -- threshold for alert
   cost_per_unit   DECIMAL(10,4) DEFAULT 0,     -- cost per unit for COGS
   supplier_id     UUID REFERENCES suppliers(id) ON DELETE SET NULL,
@@ -108,6 +108,8 @@ CREATE TABLE sales (
   amount_tendered DECIMAL(10,2),             -- for cash: amount given by customer
   change_due      DECIMAL(10,2) DEFAULT 0,
   notes           TEXT,
+  order_status    VARCHAR(20) DEFAULT 'pending'
+                    CHECK (order_status IN ('pending', 'preparing', 'ready', 'completed')),
   created_at      TIMESTAMP DEFAULT NOW()
 );
 
@@ -169,6 +171,7 @@ CREATE INDEX idx_sale_items_product  ON sale_items(product_id);
 CREATE INDEX idx_expenses_date       ON expenses(expense_date);
 CREATE INDEX idx_stock_movements_ing ON stock_movements(ingredient_id);
 CREATE INDEX idx_stock_movements_date ON stock_movements(created_at);
+CREATE INDEX idx_sales_order_status   ON sales(order_status);
 
 -- ============================================================
 -- HELPER FUNCTION: auto-update updated_at timestamps

@@ -10,6 +10,7 @@ const { authenticate, authorize } = require('../middleware/auth');
 const authCtrl      = require('../controllers/authController');
 const productsCtrl  = require('../controllers/productsController');
 const salesCtrl     = require('../controllers/salesController');
+const ordersCtrl    = require('../controllers/ordersController');
 const inventoryCtrl = require('../controllers/inventoryController');
 const accountingCtrl= require('../controllers/accountingController');
 const reportsCtrl   = require('../controllers/reportsController');
@@ -33,6 +34,10 @@ router.get ('/categories',    authenticate, productsCtrl.getCategories);
 router.post('/sales',         authenticate, salesCtrl.processSale);
 router.get ('/sales',         authenticate, salesCtrl.getSales);
 router.get ('/sales/:id',     authenticate, salesCtrl.getSale);
+
+// ── Kitchen / Orders ──────────────────────────────────────
+router.get  ('/orders/active',      authenticate, ordersCtrl.getActiveOrders);
+router.patch('/orders/:id/status',  authenticate, ordersCtrl.updateOrderStatus);
 
 // ── Inventory ─────────────────────────────────────────────
 router.get ('/inventory/ingredients',      authenticate, inventoryCtrl.getIngredients);

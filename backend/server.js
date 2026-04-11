@@ -3,12 +3,15 @@
 
 require('dotenv').config();
 const express    = require('express');
+const http       = require('http');
 const cors       = require('cors');
 const bodyParser = require('body-parser');
+const { Server } = require('socket.io');
 const routes     = require('./routes/index');
 
-const app  = express();
-const PORT = process.env.PORT || 4000;
+const app    = express();
+const server = http.createServer(app);
+const PORT   = process.env.PORT || 4000;
 
 // ── CORS ──────────────────────────────────────────────────
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000')
@@ -17,7 +20,6 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000')
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -26,6 +28,24 @@ app.use(cors({
   },
   credentials: true,
 }));
+
+// ── Socket.IO ─────────────────────────────────────────────
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigins,
+    credentials: true,
+  },
+});
+
+io.on('connection', (socket) => {
+  console.log('🔌 Kitchen client connected:', socket.id);
+  socket.on('disconnect', () => {
+    console.log('🔌 Kitchen client disconnected:', socket.id);
+  });
+});
+
+// Expose io so controllers can emit events
+app.set('io', io);
 
 // ── Body Parsing ──────────────────────────────────────────
 app.use(bodyParser.json({ limit: '10mb' }));
@@ -55,10 +75,11 @@ app.use((err, req, res, next) => {
 });
 
 // ── Start Server ──────────────────────────────────────────
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`\n☕  BrewPOS API running on http://localhost:${PORT}`);
   console.log(`   Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`   Health:      http://localhost:${PORT}/health\n`);
+  console.log(`   Health:      http://localhost:${PORT}/health`);
+  console.log(`   WebSocket:   ws://localhost:${PORT}\n`);
 });
 
 module.exports = app;

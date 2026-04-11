@@ -1,11 +1,23 @@
 // controllers/productsController.js
-// CRUD for products and categories
+// CRUD for products and categories — with in-memory cache
 
 const pool = require('../db/pool');
+
+// ── Simple TTL cache ──────────────────────────────────────
+const CACHE_TTL = 60_000; // 60 seconds
+const cache = { products: null, categories: null, productsAt: 0, categoriesAt: 0 };
+
+function invalidateCache() {
+  cache.products = null;
+  cache.categories = null;
+}
 
 /** GET /api/products — list all products with category info */
 const getProducts = async (req, res) => {
   try {
+    if (cache.products && Date.now() - cache.productsAt < CACHE_TTL) {
+      return res.json(cache.products);
+    }
     const result = await pool.query(`
       SELECT p.*,
              c.name  AS category_name,
@@ -14,6 +26,8 @@ const getProducts = async (req, res) => {
       LEFT JOIN categories c ON c.id = p.category_id
       ORDER BY c.name, p.name
     `);
+    cache.products = result.rows;
+    cache.productsAt = Date.now();
     res.json(result.rows);
   } catch (err) {
     console.error(err);
@@ -61,7 +75,6 @@ const createProduct = async (req, res) => {
       );
       const product = p.rows[0];
 
-      // Insert recipe items if provided
       if (recipe && recipe.length) {
         for (const item of recipe) {
           await client.query(
@@ -72,6 +85,7 @@ const createProduct = async (req, res) => {
       }
 
       await client.query('COMMIT');
+      invalidateCache();
       res.status(201).json(product);
     } catch (err) {
       await client.query('ROLLBACK');
@@ -97,6 +111,7 @@ const updateProduct = async (req, res) => {
       [name, description, price, category_id, is_available, id]
     );
     if (!result.rows.length) return res.status(404).json({ error: 'Not found' });
+    invalidateCache();
     res.json(result.rows[0]);
   } catch (err) {
     console.error(err);
@@ -108,6 +123,7 @@ const updateProduct = async (req, res) => {
 const deleteProduct = async (req, res) => {
   try {
     await pool.query('DELETE FROM products WHERE id=$1', [req.params.id]);
+    invalidateCache();
     res.json({ success: true });
   } catch (err) {
     console.error(err);
@@ -118,7 +134,12 @@ const deleteProduct = async (req, res) => {
 /** GET /api/categories */
 const getCategories = async (req, res) => {
   try {
+    if (cache.categories && Date.now() - cache.categoriesAt < CACHE_TTL) {
+      return res.json(cache.categories);
+    }
     const result = await pool.query('SELECT * FROM categories ORDER BY name');
+    cache.categories = result.rows;
+    cache.categoriesAt = Date.now();
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
