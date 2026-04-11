@@ -18,6 +18,7 @@ const NAV = [
   { href: '/accounting',         label: 'Accounting',    icon: '💰', roles: ['admin','manager'] },
   { href: '/reports',            label: 'Reports',       icon: '📈', roles: ['admin','manager'] },
   { href: '/dashboard/users',    label: 'Staff',         icon: '👥', roles: ['admin'] },
+  { href: '/audit',              label: 'Audit Log',     icon: '📜', roles: ['admin'] },
 ];
 
 interface SidebarProps {

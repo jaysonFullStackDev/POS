@@ -185,3 +185,17 @@ export interface DashboardStats {
   low_stock_count: number;
   top_product_today: { product_name: string; units: number } | null;
 }
+
+// ── Audit Logs ─────────────────────────────────────────
+export interface AuditLog {
+  id: string;
+  user_id?: string;
+  user_name?: string;
+  user_role?: string;
+  action: string;
+  entity?: string;
+  entity_id?: string;
+  details?: Record<string, any>;
+  ip_address?: string;
+  created_at: string;
+}

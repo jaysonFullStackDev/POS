@@ -5,6 +5,7 @@ require('dotenv').config();
 const express    = require('express');
 const http       = require('http');
 const cors       = require('cors');
+const helmet     = require('helmet');
 const bodyParser = require('body-parser');
 const { Server } = require('socket.io');
 const routes     = require('./routes/index');
@@ -47,9 +48,12 @@ io.on('connection', (socket) => {
 // Expose io so controllers can emit events
 app.set('io', io);
 
+// ── Security Headers ──────────────────────────────────────
+app.use(helmet());
+
 // ── Body Parsing ──────────────────────────────────────────
-app.use(bodyParser.json({ limit: '10mb' }));
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json({ limit: '1mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '1mb' }));
 
 // ── Health Check ──────────────────────────────────────────
 app.get('/health', (req, res) => {

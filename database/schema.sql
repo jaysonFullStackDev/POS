@@ -162,6 +162,23 @@ CREATE TABLE stock_movements (
 );
 
 -- ============================================================
+-- AUDIT_LOGS TABLE
+-- Tracks all important actions for accountability
+-- ============================================================
+CREATE TABLE audit_logs (
+  id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id     UUID REFERENCES users(id) ON DELETE SET NULL,
+  user_name   VARCHAR(100),
+  user_role   VARCHAR(20),
+  action      VARCHAR(50) NOT NULL,
+  entity      VARCHAR(50),
+  entity_id   VARCHAR(100),
+  details     JSONB,
+  ip_address  VARCHAR(45),
+  created_at  TIMESTAMP DEFAULT NOW()
+);
+
+-- ============================================================
 -- INDEXES for performance
 -- ============================================================
 CREATE INDEX idx_sales_created_at    ON sales(created_at);
@@ -172,6 +189,9 @@ CREATE INDEX idx_expenses_date       ON expenses(expense_date);
 CREATE INDEX idx_stock_movements_ing ON stock_movements(ingredient_id);
 CREATE INDEX idx_stock_movements_date ON stock_movements(created_at);
 CREATE INDEX idx_sales_order_status   ON sales(order_status);
+CREATE INDEX idx_audit_logs_user       ON audit_logs(user_id);
+CREATE INDEX idx_audit_logs_action     ON audit_logs(action);
+CREATE INDEX idx_audit_logs_created    ON audit_logs(created_at);
 
 -- ============================================================
 -- HELPER FUNCTION: auto-update updated_at timestamps

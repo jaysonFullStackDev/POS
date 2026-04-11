@@ -153,4 +153,12 @@ export const api = {
     },
     dashboard: () => apiFetch<any>('/reports/dashboard'),
   },
+
+  // ── Audit Logs ─────────────────────────────────────────
+  audit: {
+    logs: (params?: Record<string, string>) => {
+      const qs = params ? '?' + new URLSearchParams(params).toString() : '';
+      return apiFetch<any>(`/audit/logs${qs}`);
+    },
+  },
 };
