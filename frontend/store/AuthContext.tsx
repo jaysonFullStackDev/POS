@@ -3,31 +3,37 @@
 // Global auth state — wraps entire app
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { api, setToken, clearToken, getToken } from '@/lib/api';
+import { api, setToken, clearToken, getToken, setRefreshToken, getRefreshToken } from '@/lib/api';
 import type { User } from '@/types';
 
 interface AuthContextValue {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: (credential: string) => Promise<void>;
   logout: () => void;
   isAdmin: boolean;
   isManager: boolean;
-  canManage: boolean; // admin or manager
+  canManage: boolean;
+  needsSetup: boolean;
+  markSetupDone: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser]       = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser]           = useState<User | null>(null);
+  const [loading, setLoading]     = useState(true);
+  const [needsSetup, setNeedsSetup] = useState(false);
 
-  // On mount, restore session from localStorage
   useEffect(() => {
     const token = getToken();
     if (token) {
       api.auth.me()
-        .then(u => setUser(u))
+        .then(u => {
+          setUser(u);
+          setNeedsSetup(!u.is_setup_done);
+        })
         .catch(() => clearToken())
         .finally(() => setLoading(false));
     } else {
@@ -35,26 +41,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const login = useCallback(async (email: string, password: string) => {
-    const { token, user: u } = await api.auth.login(email, password);
-    setToken(token);
-    setUser(u);
+  const handleAuthResponse = useCallback((data: { token: string; refreshToken: string; user: any; is_setup_done?: boolean }) => {
+    setToken(data.token);
+    setRefreshToken(data.refreshToken);
+    setUser(data.user);
+    setNeedsSetup(!data.is_setup_done);
   }, []);
 
+  const login = useCallback(async (email: string, password: string) => {
+    const data = await api.auth.login(email, password);
+    handleAuthResponse(data);
+  }, [handleAuthResponse]);
+
+  const loginWithGoogle = useCallback(async (credential: string) => {
+    const data = await api.auth.google(credential);
+    handleAuthResponse(data);
+  }, [handleAuthResponse]);
+
   const logout = useCallback(() => {
+    api.auth.logout(getRefreshToken());
     clearToken();
     setUser(null);
+    setNeedsSetup(false);
   }, []);
+
+  const markSetupDone = useCallback(() => setNeedsSetup(false), []);
 
   return (
     <AuthContext.Provider value={{
-      user,
-      loading,
-      login,
-      logout,
-      isAdmin:    user?.role === 'admin',
-      isManager:  user?.role === 'manager',
-      canManage:  user?.role === 'admin' || user?.role === 'manager',
+      user, loading, login, loginWithGoogle, logout,
+      isAdmin:   user?.role === 'admin',
+      isManager: user?.role === 'manager',
+      canManage: user?.role === 'admin' || user?.role === 'manager',
+      needsSetup,
+      markSetupDone,
     }}>
       {children}
     </AuthContext.Provider>

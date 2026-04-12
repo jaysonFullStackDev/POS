@@ -8,8 +8,36 @@ export interface User {
   name: string;
   email: string;
   role: UserRole;
+  tenant_id: string;
+  avatar_url?: string;
   is_active?: boolean;
+  is_setup_done?: boolean;
+  company_name?: string;
   created_at?: string;
+}
+
+export interface Tenant {
+  id: string;
+  company_name: string;
+  address?: string;
+  phone?: string;
+  is_setup_done: boolean;
+  payment_config: PaymentConfig;
+  created_at: string;
+}
+
+export interface PaymentProviderConfig {
+  enabled: boolean;
+  account_name?: string;
+  account_number?: string;
+  bank_name?: string;
+}
+
+export interface PaymentConfig {
+  gcash?: PaymentProviderConfig;
+  maya?: PaymentProviderConfig;
+  gotyme?: PaymentProviderConfig;
+  bank_transfer?: PaymentProviderConfig;
 }
 
 export interface Category {
@@ -67,7 +95,7 @@ export interface CartItem {
   quantity: number;
 }
 
-export type PaymentMethod = 'cash' | 'card' | 'ewallet';
+export type PaymentMethod = 'cash' | 'card' | 'ewallet' | 'gcash' | 'maya' | 'gotyme' | 'bank_transfer';
 
 // ── Sales ─────────────────────────────────────────────────
 export interface Sale {

@@ -42,10 +42,11 @@ const auditLog = (action, entity) => (req, res, next) => {
 
       // Fire and forget — don't block the response
       const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || null;
+      const tenantId = req.tenant_id || user.tenant_id || null;
       pool.query(
-        `INSERT INTO audit_logs (user_id, user_name, user_role, action, entity, entity_id, details, ip_address)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
-        [user.id || null, user.name || null, user.role || null, action, entity, entityId, JSON.stringify(details), ip]
+        `INSERT INTO audit_logs (tenant_id, user_id, user_name, user_role, action, entity, entity_id, details, ip_address)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+        [tenantId, user.id || null, user.name || null, user.role || null, action, entity, entityId, JSON.stringify(details), ip]
       ).catch(err => console.error('Audit log error:', err.message));
     }
 

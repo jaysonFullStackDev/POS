@@ -8,6 +8,7 @@ const { authenticate, authorize } = require('../middleware/auth');
 const { loginLimiter, apiLimiter } = require('../middleware/rateLimiter');
 const v = require('../middleware/validate');
 const audit = require('../middleware/auditLog');
+const { checkAccountLockout } = require('../middleware/security');
 
 // Controllers
 const authCtrl      = require('../controllers/authController');
@@ -23,8 +24,13 @@ const auditCtrl     = require('../controllers/auditController');
 router.use(apiLimiter);
 
 // ── Auth ──────────────────────────────────────────────────
-router.post('/auth/login',    loginLimiter, v.loginRules, audit('login', 'auth'), authCtrl.login);
+router.post('/auth/login',    loginLimiter, checkAccountLockout, v.loginRules, audit('login', 'auth'), authCtrl.login);
+router.post('/auth/google',   loginLimiter, authCtrl.googleAuth);
+router.post('/auth/refresh',  loginLimiter, authCtrl.refresh);
+router.post('/auth/logout',   authCtrl.logout);
 router.get ('/auth/me',       authenticate, authCtrl.getMe);
+router.get ('/auth/tenant',   authenticate, authCtrl.getTenant);
+router.put ('/auth/tenant-setup', authenticate, authorize('admin'), authCtrl.tenantSetup);
 router.get ('/auth/users',    authenticate, authorize('admin','manager'), authCtrl.getUsers);
 router.post('/auth/users',    authenticate, authorize('admin'), v.createUserRules, audit('create_user', 'user'), authCtrl.createUser);
 router.put ('/auth/change-password', authenticate, v.changePasswordRules, audit('change_password', 'user'), authCtrl.changePassword);
@@ -36,6 +42,7 @@ router.post('/products',      authenticate, authorize('admin','manager'), v.crea
 router.put ('/products/:id',  authenticate, authorize('admin','manager'), v.updateProductRules, audit('update_product', 'product'), productsCtrl.updateProduct);
 router.delete('/products/:id',authenticate, authorize('admin'), audit('delete_product', 'product'), productsCtrl.deleteProduct);
 router.get ('/categories',    authenticate, productsCtrl.getCategories);
+router.post('/categories',    authenticate, authorize('admin','manager'), audit('create_category', 'category'), productsCtrl.createCategory);
 
 // ── Sales / POS ───────────────────────────────────────────
 router.post('/sales',         authenticate, v.processSaleRules, audit('create_sale', 'sale'), salesCtrl.processSale);

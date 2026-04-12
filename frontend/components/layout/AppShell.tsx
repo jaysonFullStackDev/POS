@@ -3,8 +3,9 @@
 // Wraps all authenticated pages with sidebar + auth guard
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/store/AuthContext';
+import { isAllowedRedirect } from '@/lib/safeRedirect';
 import Sidebar from './Sidebar';
 
 interface Props {
@@ -13,14 +14,19 @@ interface Props {
 }
 
 export default function AppShell({ children, requiredRole }: Props) {
-  const { user, loading } = useAuth();
+  const { user, loading, needsSetup } = useAuth();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!loading) {
       if (!user) {
-        router.replace('/login');
+        const returnTo = isAllowedRedirect(pathname) ? `?returnTo=${pathname}` : '';
+        router.replace(`/login${returnTo}`);
+      } else if (needsSetup) {
+        router.replace('/setup');
       } else if (requiredRole) {
         const allowed = requiredRole === 'manager'
           ? ['admin', 'manager'].includes(user.role)
@@ -28,7 +34,7 @@ export default function AppShell({ children, requiredRole }: Props) {
         if (!allowed) router.replace('/dashboard');
       }
     }
-  }, [user, loading, requiredRole, router]);
+  }, [user, loading, requiredRole, router, pathname, needsSetup]);
 
   if (loading || !user) {
     return (

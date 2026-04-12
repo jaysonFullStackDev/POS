@@ -1,7 +1,7 @@
 'use client';
 // components/layout/Sidebar.tsx
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/store/AuthContext';
@@ -114,6 +114,21 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const [showChangePw, setShowChangePw] = useState(false);
+  const [lowStockCount, setLowStockCount] = useState(0);
+
+  useEffect(() => {
+    if (user && ['admin', 'manager'].includes(user.role)) {
+      const fetchLowStock = () => {
+        api.inventory.lowStock()
+          .then(items => setLowStockCount(Array.isArray(items) ? items.length : 0))
+          .catch(() => {});
+      };
+      // Delay initial fetch to let auth settle
+      const timeout = setTimeout(fetchLowStock, 2000);
+      const interval = setInterval(fetchLowStock, 60_000);
+      return () => { clearTimeout(timeout); clearInterval(interval); };
+    }
+  }, [user]);
 
   const allowedNav = NAV.filter(n =>
     user ? n.roles.includes(user.role) : false
@@ -173,6 +188,11 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               >
                 <span className="text-base">{link.icon}</span>
                 {link.label}
+                {link.href === '/inventory' && lowStockCount > 0 && (
+                  <span className="ml-auto w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                    {lowStockCount}
+                  </span>
+                )}
               </Link>
             );
           })}

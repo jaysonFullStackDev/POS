@@ -1,33 +1,18 @@
 // controllers/productsController.js
-// CRUD for products and categories — with in-memory cache
+// CRUD for products and categories — tenant-scoped
 
 const pool = require('../db/pool');
 
-// ── Simple TTL cache ──────────────────────────────────────
-const CACHE_TTL = 60_000; // 60 seconds
-const cache = { products: null, categories: null, productsAt: 0, categoriesAt: 0 };
-
-function invalidateCache() {
-  cache.products = null;
-  cache.categories = null;
-}
-
-/** GET /api/products — list all products with category info */
+/** GET /api/products */
 const getProducts = async (req, res) => {
   try {
-    if (cache.products && Date.now() - cache.productsAt < CACHE_TTL) {
-      return res.json(cache.products);
-    }
     const result = await pool.query(`
-      SELECT p.*,
-             c.name  AS category_name,
-             c.color AS category_color
-      FROM   products p
+      SELECT p.*, c.name AS category_name, c.color AS category_color
+      FROM products p
       LEFT JOIN categories c ON c.id = p.category_id
+      WHERE p.tenant_id = $1
       ORDER BY c.name, p.name
-    `);
-    cache.products = result.rows;
-    cache.productsAt = Date.now();
+    `, [req.tenant_id]);
     res.json(result.rows);
   } catch (err) {
     console.error(err);
@@ -35,24 +20,21 @@ const getProducts = async (req, res) => {
   }
 };
 
-/** GET /api/products/:id — single product with recipe */
+/** GET /api/products/:id */
 const getProduct = async (req, res) => {
   try {
-    const { id } = req.params;
     const product = await pool.query(
       `SELECT p.*, c.name AS category_name
-       FROM products p
-       LEFT JOIN categories c ON c.id = p.category_id
-       WHERE p.id = $1`, [id]
+       FROM products p LEFT JOIN categories c ON c.id = p.category_id
+       WHERE p.id = $1 AND p.tenant_id = $2`, [req.params.id, req.tenant_id]
     );
     if (!product.rows.length) return res.status(404).json({ error: 'Not found' });
 
     const recipe = await pool.query(`
       SELECT r.*, i.name AS ingredient_name, i.unit
-      FROM   recipes r
-      JOIN   ingredients i ON i.id = r.ingredient_id
-      WHERE  r.product_id = $1
-    `, [id]);
+      FROM recipes r JOIN ingredients i ON i.id = r.ingredient_id
+      WHERE r.product_id = $1
+    `, [req.params.id]);
 
     res.json({ ...product.rows[0], recipe: recipe.rows });
   } catch (err) {
@@ -61,7 +43,7 @@ const getProduct = async (req, res) => {
   }
 };
 
-/** POST /api/products — create product */
+/** POST /api/products */
 const createProduct = async (req, res) => {
   try {
     const { name, description, price, category_id, recipe } = req.body;
@@ -69,9 +51,9 @@ const createProduct = async (req, res) => {
     try {
       await client.query('BEGIN');
       const p = await client.query(
-        `INSERT INTO products (name, description, price, category_id)
-         VALUES ($1,$2,$3,$4) RETURNING *`,
-        [name, description, price, category_id]
+        `INSERT INTO products (tenant_id, name, description, price, category_id)
+         VALUES ($1,$2,$3,$4,$5) RETURNING *`,
+        [req.tenant_id, name, description, price, category_id]
       );
       const product = p.rows[0];
 
@@ -85,7 +67,6 @@ const createProduct = async (req, res) => {
       }
 
       await client.query('COMMIT');
-      invalidateCache();
       res.status(201).json(product);
     } catch (err) {
       await client.query('ROLLBACK');
@@ -99,19 +80,16 @@ const createProduct = async (req, res) => {
   }
 };
 
-/** PUT /api/products/:id — update product */
+/** PUT /api/products/:id */
 const updateProduct = async (req, res) => {
   try {
-    const { id } = req.params;
     const { name, description, price, category_id, is_available } = req.body;
     const result = await pool.query(
-      `UPDATE products
-       SET name=$1, description=$2, price=$3, category_id=$4, is_available=$5
-       WHERE id=$6 RETURNING *`,
-      [name, description, price, category_id, is_available, id]
+      `UPDATE products SET name=$1, description=$2, price=$3, category_id=$4, is_available=$5
+       WHERE id=$6 AND tenant_id=$7 RETURNING *`,
+      [name, description, price, category_id, is_available, req.params.id, req.tenant_id]
     );
     if (!result.rows.length) return res.status(404).json({ error: 'Not found' });
-    invalidateCache();
     res.json(result.rows[0]);
   } catch (err) {
     console.error(err);
@@ -122,8 +100,7 @@ const updateProduct = async (req, res) => {
 /** DELETE /api/products/:id */
 const deleteProduct = async (req, res) => {
   try {
-    await pool.query('DELETE FROM products WHERE id=$1', [req.params.id]);
-    invalidateCache();
+    await pool.query('DELETE FROM products WHERE id=$1 AND tenant_id=$2', [req.params.id, req.tenant_id]);
     res.json({ success: true });
   } catch (err) {
     console.error(err);
@@ -134,16 +111,27 @@ const deleteProduct = async (req, res) => {
 /** GET /api/categories */
 const getCategories = async (req, res) => {
   try {
-    if (cache.categories && Date.now() - cache.categoriesAt < CACHE_TTL) {
-      return res.json(cache.categories);
-    }
-    const result = await pool.query('SELECT * FROM categories ORDER BY name');
-    cache.categories = result.rows;
-    cache.categoriesAt = Date.now();
+    const result = await pool.query('SELECT * FROM categories WHERE tenant_id = $1 ORDER BY name', [req.tenant_id]);
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
   }
 };
 
-module.exports = { getProducts, getProduct, createProduct, updateProduct, deleteProduct, getCategories };
+/** POST /api/categories */
+const createCategory = async (req, res) => {
+  try {
+    const { name, color, icon } = req.body;
+    if (!name) return res.status(400).json({ error: 'Category name is required' });
+    const result = await pool.query(
+      `INSERT INTO categories (tenant_id, name, color, icon) VALUES ($1,$2,$3,$4) RETURNING *`,
+      [req.tenant_id, name, color || '#8B6F47', icon || null]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+module.exports = { getProducts, getProduct, createProduct, updateProduct, deleteProduct, getCategories, createCategory };

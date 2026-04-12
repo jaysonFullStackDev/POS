@@ -11,6 +11,66 @@ import clsx from 'clsx';
 const fmt = (n: number) =>
   '₱' + Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 });
 
+const CATEGORY_COLORS = [
+  '#6F4E37', '#4A90D9', '#E8A87C', '#D4A373', '#9B8B7A',
+  '#4CAF50', '#FF6B6B', '#A855F7', '#F59E0B', '#06B6D4',
+];
+
+// ── Category Modal ────────────────────────────────────────
+function CategoryModal({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
+  const [name, setName]   = useState('');
+  const [color, setColor] = useState(CATEGORY_COLORS[0]);
+  const [busy, setBusy]   = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSave = async () => {
+    if (!name.trim()) { setError('Name is required'); return; }
+    setBusy(true);
+    try {
+      await api.categories.create({ name, color });
+      onSaved();
+      onClose();
+    } catch (err: any) {
+      setError(err.message || 'Failed to create category');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6">
+        <h3 className="font-display font-bold text-espresso-900 mb-4">New Category</h3>
+        {error && <div className="mb-3 p-2.5 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">{error}</div>}
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs font-medium text-espresso-600 block mb-1">Category Name *</label>
+            <input type="text" value={name} onChange={e => setName(e.target.value)}
+              className="input" placeholder="e.g. Smoothies" />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-espresso-600 block mb-1">Color</label>
+            <div className="flex gap-2 flex-wrap">
+              {CATEGORY_COLORS.map(c => (
+                <button key={c} onClick={() => setColor(c)}
+                  className={clsx('w-8 h-8 rounded-full border-2 transition-all',
+                    color === c ? 'border-espresso-900 scale-110' : 'border-transparent')}
+                  style={{ backgroundColor: c }} />
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="flex gap-3 mt-6">
+          <button onClick={onClose} className="btn-secondary flex-1">Cancel</button>
+          <button onClick={handleSave} disabled={busy} className="btn-primary flex-1">
+            {busy ? 'Creating…' : 'Create'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Product Form Modal ────────────────────────────────────
 function ProductModal({
   product,
@@ -212,6 +272,10 @@ export default function ProductsPage() {
   const [editing,     setEditing]     = useState<Product | null | 'new'>('new' as any);
   const [showModal,   setShowModal]   = useState(false);
   const [filterCat,   setFilterCat]   = useState('all');
+  const [showCatModal, setShowCatModal] = useState(false);
+  const [previewId, setPreviewId] = useState<string | null>(null);
+  const [previewData, setPreviewData] = useState<any>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
 
   const loadData = () => {
     setLoading(true);
@@ -232,7 +296,15 @@ export default function ProductsPage() {
   useEffect(() => { loadData(); }, []);
 
   const openNew  = () => { setEditing(null); setShowModal(true); };
-  const openEdit = (p: Product) => { setEditing(p); setShowModal(true); };
+  const openEdit = async (p: Product) => {
+    try {
+      const full = await api.products.get(p.id);
+      setEditing(full);
+    } catch {
+      setEditing(p);
+    }
+    setShowModal(true);
+  };
 
   const toggleAvailability = async (product: Product) => {
     try {
@@ -255,6 +327,16 @@ export default function ProductsPage() {
     }
   };
 
+  const openPreview = async (product: Product) => {
+    setPreviewId(product.id);
+    setPreviewLoading(true);
+    try {
+      const data = await api.products.get(product.id);
+      setPreviewData(data);
+    } catch { setPreviewData(null); }
+    finally { setPreviewLoading(false); }
+  };
+
   const filtered = filterCat === 'all'
     ? products
     : products.filter(p => p.category_id === filterCat);
@@ -272,9 +354,14 @@ export default function ProductsPage() {
               {products.length} products · {products.filter(p => p.is_available).length} available
             </p>
           </div>
-          <button onClick={openNew} className="btn-primary text-sm">
-            + Add Product
-          </button>
+          <div className="flex gap-2">
+            <button onClick={() => setShowCatModal(true)} className="btn-secondary text-sm">
+              + Add Category
+            </button>
+            <button onClick={openNew} className="btn-primary text-sm">
+              + Add Product
+            </button>
+          </div>
         </div>
 
         {/* Category filter */}
@@ -320,7 +407,8 @@ export default function ProductsPage() {
               </thead>
               <tbody>
                 {filtered.map(product => (
-                  <tr key={product.id} className="table-row-hover border-t border-brew-50">
+                  <tr key={product.id} className="table-row-hover border-t border-brew-50 cursor-pointer"
+                    onClick={() => openPreview(product)}>
                     <td className="px-4 py-3">
                       <p className="font-medium text-espresso-800">{product.name}</p>
                       {product.description && (
@@ -343,7 +431,7 @@ export default function ProductsPage() {
                     </td>
                     <td className="px-4 py-3 text-center">
                       <button
-                        onClick={() => toggleAvailability(product)}
+                        onClick={(e) => { e.stopPropagation(); toggleAvailability(product); }}
                         className={clsx('badge cursor-pointer hover:opacity-80 transition-opacity',
                           product.is_available
                             ? 'bg-green-100 text-green-700'
@@ -356,13 +444,13 @@ export default function ProductsPage() {
                     <td className="px-4 py-3 text-center">
                       <div className="flex gap-3 justify-center">
                         <button
-                          onClick={() => openEdit(product)}
+                          onClick={(e) => { e.stopPropagation(); openEdit(product); }}
                           className="text-xs text-brew-600 hover:text-brew-800 font-medium"
                         >
                           Edit
                         </button>
                         <button
-                          onClick={() => handleDelete(product)}
+                          onClick={(e) => { e.stopPropagation(); handleDelete(product); }}
                           className="text-xs text-red-400 hover:text-red-600 font-medium"
                         >
                           Delete
@@ -382,6 +470,89 @@ export default function ProductsPage() {
           </div>
         )}
       </div>
+
+      {/* Product Preview Card */}
+      {previewId && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => { setPreviewId(null); setPreviewData(null); }}>
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md" onClick={e => e.stopPropagation()}>
+            {previewLoading ? (
+              <div className="p-10 text-center text-espresso-400 animate-pulse">Loading…</div>
+            ) : previewData ? (
+              <>
+                <div className="p-6 border-b border-brew-100">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="font-display font-bold text-espresso-900 text-xl">{previewData.name}</h3>
+                      {previewData.description && (
+                        <p className="text-sm text-espresso-500 mt-1">{previewData.description}</p>
+                      )}
+                    </div>
+                    <button onClick={() => { setPreviewId(null); setPreviewData(null); }}
+                      className="text-espresso-400 hover:text-espresso-700 text-xl">✕</button>
+                  </div>
+                </div>
+                <div className="p-6 space-y-4">
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="bg-brew-50 rounded-2xl p-3 text-center">
+                      <p className="text-xs text-espresso-500">Price</p>
+                      <p className="font-bold text-espresso-900 text-lg">{fmt(previewData.price)}</p>
+                    </div>
+                    <div className="bg-brew-50 rounded-2xl p-3 text-center">
+                      <p className="text-xs text-espresso-500">Category</p>
+                      <span className="badge mt-1 text-xs" style={{
+                        backgroundColor: (previewData.category_color || '#c97f3a') + '20',
+                        color: previewData.category_color || '#c97f3a',
+                      }}>{previewData.category_name || '—'}</span>
+                    </div>
+                    <div className="bg-brew-50 rounded-2xl p-3 text-center">
+                      <p className="text-xs text-espresso-500">Status</p>
+                      <span className={clsx('badge mt-1 text-xs',
+                        previewData.is_available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'
+                      )}>{previewData.is_available ? '✅ Available' : '❌ Hidden'}</span>
+                    </div>
+                  </div>
+
+                  {/* Recipe / Ingredients */}
+                  <div>
+                    <h4 className="text-xs font-medium text-espresso-600 uppercase tracking-wide mb-2">
+                      Recipe / Ingredients
+                    </h4>
+                    {previewData.recipe && previewData.recipe.length > 0 ? (
+                      <div className="space-y-1.5">
+                        {previewData.recipe.map((r: any) => (
+                          <div key={r.ingredient_id} className="flex items-center justify-between bg-cream-50 rounded-xl px-3 py-2">
+                            <span className="text-sm text-espresso-800">{r.ingredient_name}</span>
+                            <span className="text-sm font-mono text-espresso-600">
+                              {Number(r.quantity).toFixed(1)} {r.unit}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-espresso-400 italic">No recipe defined</p>
+                    )}
+                  </div>
+                </div>
+                <div className="p-6 pt-0 flex gap-3">
+                  <button onClick={() => { setPreviewId(null); setPreviewData(null); openEdit(previewData); }}
+                    className="btn-primary flex-1 text-sm">Edit Product</button>
+                  <button onClick={() => { setPreviewId(null); setPreviewData(null); }}
+                    className="btn-secondary flex-1 text-sm">Close</button>
+                </div>
+              </>
+            ) : (
+              <div className="p-10 text-center text-red-500">Failed to load product</div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {showCatModal && (
+        <CategoryModal
+          onClose={() => setShowCatModal(false)}
+          onSaved={loadData}
+        />
+      )}
 
       {showModal && (
         <ProductModal
