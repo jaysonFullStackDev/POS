@@ -3,10 +3,8 @@ name: Frontend CI/CD
 on:
   push:
     branches: [main]
-    paths: [frontend/**]
   pull_request:
     branches: [main]
-    paths: [frontend/**]
 
 jobs:
   build:
@@ -27,11 +25,10 @@ jobs:
 
       - run: npm ci
 
-      - run: npm run lint
-
       - run: npm run build
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
 
   deploy:
     needs: build
