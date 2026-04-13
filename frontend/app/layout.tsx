@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { AuthProvider } from '@/store/AuthContext';
 import { CartProvider }  from '@/store/CartContext';
+import { ToastProvider } from '@/components/ui/Toast';
 
 export const metadata: Metadata = {
   title: 'BrewPOS — Coffee Shop Management',
@@ -15,7 +16,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <AuthProvider>
           <CartProvider>
-            {children}
+            <ToastProvider>
+              {children}
+            </ToastProvider>
           </CartProvider>
         </AuthProvider>
       </body>

@@ -99,14 +99,18 @@ async function apiFetch<T>(
 
   if (!res.ok) {
     let errMsg = `HTTP ${res.status}`;
+    let isDemo = false;
     try {
       const contentType = res.headers.get('content-type') || '';
       if (contentType.includes('application/json')) {
         const err = await res.json();
         errMsg = err.error || errMsg;
+        isDemo = !!err.isDemo;
       }
     } catch {}
-    throw new Error(errMsg);
+    const error = new Error(errMsg) as any;
+    error.isDemo = isDemo;
+    throw error;
   }
 
   const data: T = await res.json();
