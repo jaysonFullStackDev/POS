@@ -132,11 +132,11 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ credential }),
       }),
-    logout: (refreshToken: string | null) =>
+    logout: (refreshToken: string | null, email?: string | null) =>
       fetch(`${BASE_URL}/api/auth/logout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken }),
+        body: JSON.stringify({ refreshToken, email }),
       }).catch(() => {}),
     me: () => apiFetch<any>('/auth/me'),
     tenant: () => apiFetch<any>('/auth/tenant'),

@@ -59,11 +59,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [handleAuthResponse]);
 
   const logout = useCallback(() => {
-    api.auth.logout(getRefreshToken());
+    const email = user?.email;
+    api.auth.logout(getRefreshToken(), email);
     clearToken();
     setUser(null);
     setNeedsSetup(false);
-  }, []);
+  }, [user]);
 
   const markSetupDone = useCallback(() => setNeedsSetup(false), []);
 
