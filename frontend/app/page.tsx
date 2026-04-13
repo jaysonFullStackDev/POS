@@ -95,16 +95,20 @@ export default function LandingPage() {
   const stats = useInView();
   const cta = useInView();
 
-  if (loading || user) return null;
+  if (loading) return (
+    <div className="min-h-screen bg-espresso-950 flex items-center justify-center">
+      <span className="text-4xl animate-pulse">☕</span>
+    </div>
+  );
+  if (user) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-espresso-950 via-espresso-900 to-brew-900 overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-espresso-950 via-espresso-900 to-brew-900">
 
       {/* ── Floating decorative elements ── */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-brew-500/5 rounded-full blur-3xl animate-float-slow" />
         <div className="absolute top-1/3 -left-32 w-72 h-72 bg-brew-600/5 rounded-full blur-3xl animate-float-slower" />
-        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-brew-400/5 rounded-full blur-3xl animate-float-slow" />
       </div>
 
       {/* ── Nav ── */}
