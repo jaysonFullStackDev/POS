@@ -1,59 +1,47 @@
 # ☕ BrewPOS — Coffee Shop POS System
 
-A full-stack Point of Sale, Inventory Management, and Accounting system built for small coffee shops.
+A multi-tenant coffee shop POS system with real-time orders, automatic inventory deduction, expense tracking, and P&L reporting. Features Google OAuth signup, role-based access, and support for GCash, Maya, GoTyme, and bank transfers.
+
+> **This repo contains the frontend only.** The backend API lives at [BrewPOS-Backend](https://github.com/jaysonFullStackDev/BrewPOS-Backend).
 
 ---
 
-## 🏗️ Architecture Overview
+## 🏗️ Architecture
+
+| Repo | Stack | Deploy |
+|------|-------|--------|
+| **[POS](https://github.com/jaysonFullStackDev/POS)** (this repo) | Next.js 14 · TypeScript · Tailwind CSS | Vercel |
+| **[BrewPOS-Backend](https://github.com/jaysonFullStackDev/BrewPOS-Backend)** | Express.js · Node.js · PostgreSQL | Vercel / Railway |
 
 ```
-brewpos/
-├── backend/                    # Express.js REST API (Node.js)
-│   ├── controllers/            # Business logic per domain
-│   │   ├── authController.js       - Login, JWT, user management
-│   │   ├── productsController.js   - Menu items & categories
-│   │   ├── salesController.js      - POS transactions (DB tx)
-│   │   ├── inventoryController.js  - Stock, movements, suppliers
-│   │   ├── accountingController.js - Expenses, P&L, cash flow
-│   │   └── reportsController.js    - Analytics & dashboard
-│   ├── middleware/
-│   │   └── auth.js             - JWT authentication & RBAC
-│   ├── routes/
-│   │   └── index.js            - All API route definitions
-│   ├── db/
-│   │   ├── pool.js             - PostgreSQL connection pool
-│   │   └── hash-seed-passwords.js - Seed password utility
-│   ├── server.js               - Express app entry point
-│   ├── package.json
-│   └── .env.example
-│
-├── frontend/                   # Next.js 14 (App Router) + TypeScript
-│   ├── app/
-│   │   ├── layout.tsx          - Root layout + global providers
-│   │   ├── globals.css         - Tailwind + custom design tokens
-│   │   ├── page.tsx            - Root redirect
-│   │   ├── login/page.tsx      - Login screen
-│   │   ├── dashboard/page.tsx  - Dashboard with charts
-│   │   ├── pos/page.tsx        - Point of Sale cashier screen
-│   │   ├── inventory/page.tsx  - Inventory management
-│   │   ├── accounting/page.tsx - Expenses & P&L
-│   │   └── reports/page.tsx    - Analytics & reports
-│   ├── components/
-│   │   └── layout/
-│   │       ├── Sidebar.tsx     - Navigation sidebar
-│   │       └── AppShell.tsx    - Auth guard + layout wrapper
-│   ├── store/
-│   │   ├── AuthContext.tsx     - Auth state (React Context)
-│   │   └── CartContext.tsx     - POS cart state
-│   ├── lib/
-│   │   └── api.ts              - Typed API client
-│   ├── types/
-│   │   └── index.ts            - All TypeScript interfaces
-│   └── package.json
-│
-└── database/
-    ├── schema.sql              - All tables, indexes, triggers
-    └── seed.sql                - Sample products, ingredients, users
+frontend/
+├── app/
+│   ├── layout.tsx              - Root layout + global providers
+│   ├── globals.css             - Tailwind + custom design tokens
+│   ├── page.tsx                - Root redirect
+│   ├── login/page.tsx          - Login (email/password + Google OAuth)
+│   ├── setup/page.tsx          - Tenant setup wizard
+│   ├── dashboard/page.tsx      - Dashboard with charts
+│   ├── dashboard/users/page.tsx - Staff management
+│   ├── pos/page.tsx            - Point of Sale cashier screen
+│   ├── pos/history/page.tsx    - Sales history
+│   ├── kitchen/page.tsx        - Kitchen display system
+│   ├── inventory/page.tsx      - Inventory + suppliers
+│   ├── inventory/products/page.tsx - Product catalog
+│   ├── accounting/page.tsx     - Expenses & P&L
+│   ├── reports/page.tsx        - Analytics & reports
+│   └── audit/page.tsx          - Audit log viewer
+├── components/layout/
+│   ├── Sidebar.tsx             - Navigation + low stock badge
+│   └── AppShell.tsx            - Auth guard + layout wrapper
+├── store/
+│   ├── AuthContext.tsx          - Auth state (Google + email login)
+│   └── CartContext.tsx          - POS cart state
+├── lib/
+│   ├── api.ts                  - Typed API client with caching
+│   └── safeRedirect.ts         - Redirect URL allowlist
+└── types/
+    └── index.ts                - All TypeScript interfaces
 ```
 
 ---
@@ -61,88 +49,39 @@ brewpos/
 ## 🚀 Local Setup
 
 ### Prerequisites
-
 - **Node.js** v18+
-- **PostgreSQL** v14+
-- **npm** or **yarn**
+- **Backend API** running ([setup instructions](https://github.com/jaysonFullStackDev/BrewPOS-Backend))
 
----
-
-### Step 1 — Database Setup
-
-```bash
-# Connect to PostgreSQL
-psql -U postgres
-
-# Create database
-CREATE DATABASE brewpos;
-\q
-
-# Run schema (creates all tables)
-psql -U postgres -d brewpos -f database/schema.sql
-
-# Run seed data
-psql -U postgres -d brewpos -f database/seed.sql
-```
-
----
-
-### Step 2 — Backend Setup
-
-```bash
-cd backend
-
-# Install dependencies
-npm install
-
-# Configure environment
-cp .env.example .env
-# Edit .env with your PostgreSQL credentials and JWT secret
-
-# Hash the seed passwords (IMPORTANT — do this after seeding)
-node db/hash-seed-passwords.js
-
-# Start development server
-npm run dev
-# → API running on http://localhost:4000
-```
-
-**Verify the API:**
-```bash
-curl http://localhost:4000/health
-# Should return: {"status":"ok","service":"BrewPOS API",...}
-```
-
----
-
-### Step 3 — Frontend Setup
+### Install & Run
 
 ```bash
 cd frontend
-
-# Install dependencies
 npm install
-
-# Configure environment
 cp .env.example .env.local
-# NEXT_PUBLIC_API_URL=http://localhost:4000
+```
 
-# Start development server
+Edit `.env.local`:
+```
+NEXT_PUBLIC_API_URL=http://localhost:4000
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+```
+
+```bash
 npm run dev
 # → App running on http://localhost:3000
 ```
 
 ---
 
-### Step 4 — Login
-
-Open [http://localhost:3000](http://localhost:3000) and use the demo credentials:
+### Demo Credentials
 
 | Role     | Email                   | Password      |
 |----------|-------------------------|---------------|
 | Admin    | admin@brewpos.com       | Admin@123     |
 | Manager  | manager@brewpos.com     | Manager@123   |
 | Cashier  | cashier@brewpos.com     | Cashier@123   |
+
+Or sign up with **Google** to create a new tenant.
 
 ---
 
@@ -152,203 +91,15 @@ Open [http://localhost:3000](http://localhost:3000) and use the demo credentials
 |----------------------|-------|---------|---------|
 | Dashboard            | ✅    | ✅      | ✅      |
 | Point of Sale (POS)  | ✅    | ✅      | ✅      |
+| Kitchen Display      | ✅    | ✅      | ✅      |
+| Sales History        | ✅    | ✅      | ✅      |
 | Inventory            | ✅    | ✅      | ❌      |
+| Products             | ✅    | ✅      | ❌      |
 | Accounting           | ✅    | ✅      | ❌      |
 | Reports              | ✅    | ✅      | ❌      |
-| User Management      | ✅    | ❌      | ❌      |
+| Staff Management     | ✅    | ❌      | ❌      |
+| Audit Log            | ✅    | ❌      | ❌      |
 | Delete Products      | ✅    | ❌      | ❌      |
-
----
-
-## 📡 API Reference
-
-### Authentication
-```
-POST   /api/auth/login       - Login (returns JWT)
-GET    /api/auth/me          - Get current user
-GET    /api/auth/users       - List users (admin/manager)
-POST   /api/auth/users       - Create user (admin only)
-```
-
-### Products
-```
-GET    /api/products         - List all products
-GET    /api/products/:id     - Product with recipe
-POST   /api/products         - Create product
-PUT    /api/products/:id     - Update product
-DELETE /api/products/:id     - Delete product
-GET    /api/categories       - List categories
-```
-
-### Sales / POS
-```
-POST   /api/sales            - Process sale (deducts stock)
-GET    /api/sales            - List sales (?from=&to=&page=)
-GET    /api/sales/:id        - Sale with items
-```
-
-### Inventory
-```
-GET    /api/inventory/ingredients       - All ingredients + low-stock flag
-POST   /api/inventory/ingredients       - Create ingredient
-PUT    /api/inventory/ingredients/:id   - Update ingredient
-GET    /api/inventory/low-stock         - Only low-stock items
-POST   /api/inventory/stock-movement    - Purchase / wastage / adjustment
-GET    /api/inventory/movements         - Stock movement log
-GET    /api/inventory/suppliers         - List suppliers
-POST   /api/inventory/suppliers         - Create supplier
-```
-
-### Accounting
-```
-POST   /api/accounting/expenses         - Record expense
-GET    /api/accounting/expenses         - List expenses (?from=&to=&category=)
-GET    /api/accounting/pnl              - P&L report (?from=&to=)
-GET    /api/accounting/cashflow         - Monthly cashflow (?year=)
-```
-
-### Reports
-```
-GET    /api/reports/dashboard           - Dashboard KPI cards
-GET    /api/reports/sales-summary       - Sales by period (?period=daily|weekly|monthly)
-GET    /api/reports/top-products        - Top products (?from=&to=&limit=)
-GET    /api/reports/inventory-usage     - Ingredient consumption + COGS
-```
-
----
-
-## 💰 Key Business Logic
-
-### Sale Transaction (Atomic)
-When a sale is processed (`POST /api/sales`), the backend:
-1. Validates all products are available
-2. Calculates subtotal → applies discount → computes 12% VAT → derives total
-3. Generates a unique receipt number (`TXN-YYYYMMDD-XXXX`)
-4. Inserts sale header + sale line items
-5. Fetches each product's recipe and deducts ingredients from stock
-6. Logs every stock deduction in `stock_movements`
-7. All steps in a single DB transaction — partial failures roll back completely
-
-### Stock Auto-Deduction
-Each product has a **recipe** (ingredients + quantities per unit sold). When a Latte is sold:
-- 18g Espresso Beans deducted
-- 200ml Fresh Milk deducted
-- 1 Paper Cup (12oz) deducted
-
-### Profit & Loss
-`GET /api/accounting/pnl` computes:
-```
-Gross Sales
-  – Discounts
-  + VAT Collected
-= Net Revenue
-  – Ingredients expenses
-  – Utilities expenses
-  – Salaries expenses
-  – Rent, Equipment, Marketing, Other
-= Gross Profit
-```
-
----
-
-## 🌐 Deployment (Vercel + Supabase)
-
-### Database: Supabase (PostgreSQL)
-1. Create a free project at [supabase.com](https://supabase.com)
-2. Go to **SQL Editor** and paste `database/schema.sql`, then `database/seed.sql`
-3. Copy the connection string from **Settings → Database**
-
-### Backend: Vercel
-```bash
-cd backend
-npm install -g vercel
-vercel
-# Set environment variables in Vercel dashboard:
-# DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD (from Supabase)
-# JWT_SECRET, NODE_ENV=production
-# Add: ssl: { rejectUnauthorized: false } to pool.js for Supabase
-```
-
-### Frontend: Vercel
-```bash
-cd frontend
-vercel
-# Set environment variable:
-# NEXT_PUBLIC_API_URL=https://your-backend.vercel.app
-```
-
----
-
-## 🐳 Docker (Optional)
-
-```yaml
-# docker-compose.yml
-version: '3.8'
-services:
-  db:
-    image: postgres:16
-    environment:
-      POSTGRES_DB: brewpos
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5432:5432"
-    volumes:
-      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
-      - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
-
-  backend:
-    build: ./backend
-    ports:
-      - "4000:4000"
-    environment:
-      DB_HOST: db
-      DB_NAME: brewpos
-      DB_USER: postgres
-      DB_PASSWORD: postgres
-      JWT_SECRET: change-me-in-production
-    depends_on:
-      - db
-
-  frontend:
-    build: ./frontend
-    ports:
-      - "3000:3000"
-    environment:
-      NEXT_PUBLIC_API_URL: http://localhost:4000
-```
-
-```bash
-docker-compose up --build
-```
-
----
-
-## 🧱 Database Schema
-
-| Table             | Purpose                                       |
-|-------------------|-----------------------------------------------|
-| `users`           | Staff accounts with role (admin/manager/cashier) |
-| `categories`      | Product categories with colors                |
-| `products`        | Menu items with prices                        |
-| `ingredients`     | Raw materials with stock levels               |
-| `recipes`         | Links products → ingredients (BOM)            |
-| `suppliers`       | Vendor contact information                    |
-| `sales`           | Transaction headers                           |
-| `sale_items`      | Line items per transaction                    |
-| `expenses`        | Business expense records                      |
-| `stock_movements` | Full audit log of all stock changes           |
-
----
-
-## 🔒 Security
-
-- Passwords hashed with **bcrypt** (10 rounds)
-- JWT tokens expire in **8 hours**
-- All protected routes require `Authorization: Bearer <token>`
-- Role-based access control enforced at middleware level
-- SQL queries use **parameterized statements** (no SQL injection)
-- CORS restricted to configured origins
 
 ---
 
@@ -356,39 +107,51 @@ docker-compose up --build
 
 | Layer      | Technology                                     |
 |------------|------------------------------------------------|
-| Frontend   | Next.js 14 (App Router) · TypeScript · Tailwind CSS |
+| Framework  | Next.js 14 (App Router) · TypeScript           |
+| Styling    | Tailwind CSS                                   |
 | State      | React Context (Auth + Cart)                    |
 | Charts     | Recharts                                       |
-| Backend    | Express.js · Node.js                           |
-| Auth       | JWT (jsonwebtoken) · bcryptjs                  |
-| Database   | PostgreSQL (via `pg` pool)                     |
-| Hosting    | Vercel (frontend + backend) · Supabase (DB)    |
+| Real-time  | Socket.IO Client                               |
+| Auth       | Google Identity Services (OAuth)               |
+| Caching    | Client-side response cache (30s TTL)           |
 
 ---
 
-## 📝 Extending the System
+## 🔒 Security Features
 
-**Add a new product category:**
-```sql
-INSERT INTO categories (name, color, icon) VALUES ('Smoothies', '#4CAF50', 'glass');
-```
+- Redirect URL allowlist validation
+- JWT access tokens (7-day expiry) with auto-refresh
+- Refresh token rotation with reuse detection
+- Google OAuth for admin signup
+- Role-based route protection (AppShell)
+- XSS-safe — no dangerouslySetInnerHTML
 
-**Add a new product with recipe:**
+---
+
+## 🌐 Deployment (Vercel)
+
 ```bash
-POST /api/products
-{
-  "name": "Green Matcha Smoothie",
-  "price": 195,
-  "category_id": "<uuid>",
-  "recipe": [
-    { "ingredient_id": "<matcha-uuid>", "quantity": 10 },
-    { "ingredient_id": "<milk-uuid>",   "quantity": 250 }
-  ]
-}
+cd frontend
+npm install -g vercel
+vercel
 ```
 
-**Add a new expense category:**
-Edit the CHECK constraint in `schema.sql` and the frontend `EXPENSE_CATS` array.
+Set environment variables in Vercel dashboard:
+- `NEXT_PUBLIC_API_URL` → your backend URL
+- `NEXT_PUBLIC_GOOGLE_CLIENT_ID` → your Google OAuth client ID
+
+---
+
+## 💰 Key Features
+
+- **Multi-tenant** — each company's data is fully isolated
+- **Google OAuth signup** — shop owners sign up with Google, then create staff accounts
+- **Tenant setup wizard** — company info + payment methods (GCash, Maya, GoTyme, Bank Transfer)
+- **Real-time kitchen display** — orders appear instantly via WebSocket
+- **Product preview cards** — click any product to see full details + recipe
+- **Low stock notifications** — badge on sidebar + detailed alert panel
+- **Category management** — create categories with custom colors
+- **Scrollable receipts** — handles large orders gracefully
 
 ---
 
