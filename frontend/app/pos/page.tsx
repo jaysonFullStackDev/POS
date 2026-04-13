@@ -7,6 +7,7 @@ import AppShell from '@/components/layout/AppShell';
 import { api } from '@/lib/api';
 import { useCart } from '@/store/CartContext';
 import { useAuth } from '@/store/AuthContext';
+import { useToast } from '@/components/ui/Toast';
 import type { Product, Category, Sale, PaymentMethod } from '@/types';
 import clsx from 'clsx';
 
@@ -166,6 +167,7 @@ function ReceiptModal({ sale, onClose }: { sale: Sale; onClose: () => void }) {
 // ── Cart Panel (used in both mobile overlay and desktop sidebar) ──
 function CartPanel({ onClose, showClose }: { onClose?: () => void; showClose?: boolean }) {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const {
     items, subtotal, taxAmount, total, discount,
     paymentMethod, setPaymentMethod, setDiscount,
@@ -186,7 +188,12 @@ function CartPanel({ onClose, showClose }: { onClose?: () => void; showClose?: b
     if (paymentMethod === 'cash') {
       const tendered = parseFloat(amountTendered);
       if (isNaN(tendered) || tendered < total) {
-        alert('Amount tendered must be ≥ total');
+        showToast(
+          paymentMethod === 'cash' && !amountTendered
+            ? 'Please enter the cash amount tendered.'
+            : `Amount tendered (${fmt(tendered || 0)}) must be at least ${fmt(total)}.`,
+          'error'
+        );
         return;
       }
     }
@@ -210,7 +217,7 @@ function CartPanel({ onClose, showClose }: { onClose?: () => void; showClose?: b
       setAmountTendered('');
       setNotes('');
     } catch (err: any) {
-      alert('Sale failed: ' + err.message);
+      showToast(err.isDemo ? err.message : 'Sale failed: ' + err.message, err.isDemo ? 'demo' : 'error');
     } finally {
       setProcessing(false);
     }
