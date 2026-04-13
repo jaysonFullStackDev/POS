@@ -8,16 +8,17 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useCallback } from 'react';
 
 // ── Scroll-triggered fade-in hook ─────────────────────────
-function useInView(threshold = 0.15) {
+function useInView(startVisible = false) {
   const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(startVisible);
   useEffect(() => {
+    if (startVisible) { setVisible(true); return; }
     const el = ref.current;
     if (!el) return;
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true); }, { threshold });
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true); }, { threshold: 0.05, rootMargin: '50px' });
     obs.observe(el);
     return () => obs.disconnect();
-  }, [threshold]);
+  }, [startVisible]);
   return { ref, visible };
 }
 
@@ -87,12 +88,12 @@ export default function LandingPage() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const hero = useInView(0.1);
+  const hero = useInView(true);
+  const stats = useInView(true);
   const features = useInView();
   const steps = useInView();
   const roles = useInView();
   const payments = useInView();
-  const stats = useInView();
   const cta = useInView();
 
   if (loading) return (
