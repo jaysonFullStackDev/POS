@@ -8,17 +8,21 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useCallback } from 'react';
 
 // ── Scroll-triggered fade-in hook ─────────────────────────
-function useInView(startVisible = false) {
+function useInView() {
   const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(startVisible);
+  const [visible, setVisible] = useState(false);
   useEffect(() => {
-    if (startVisible) { setVisible(true); return; }
     const el = ref.current;
     if (!el) return;
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true); }, { threshold: 0.05, rootMargin: '50px' });
+    // Force visible after 500ms as fallback
+    const fallback = setTimeout(() => setVisible(true), 500);
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setVisible(true); clearTimeout(fallback); } },
+      { threshold: 0, rootMargin: '0px 0px 200px 0px' }
+    );
     obs.observe(el);
-    return () => obs.disconnect();
-  }, [startVisible]);
+    return () => { obs.disconnect(); clearTimeout(fallback); };
+  }, []);
   return { ref, visible };
 }
 
@@ -88,8 +92,8 @@ export default function LandingPage() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const hero = useInView(true);
-  const stats = useInView(true);
+  const hero = useInView();
+  const stats = useInView();
   const features = useInView();
   const steps = useInView();
   const roles = useInView();
