@@ -221,7 +221,7 @@ function CartPanel({ onClose, showClose }: { onClose?: () => void; showClose?: b
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-0">
       {/* Cart header */}
       <div className="p-4 border-b border-brew-100 flex items-center justify-between">
         <h2 className="font-display font-bold text-espresso-900">
@@ -241,7 +241,7 @@ function CartPanel({ onClose, showClose }: { onClose?: () => void; showClose?: b
       </div>
 
       {/* Cart items */}
-      <div className="flex-1 overflow-y-auto px-4">
+      <div className="flex-1 overflow-y-auto px-4 min-h-0">
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-espresso-300">
             <span className="text-5xl">🛒</span>
@@ -412,7 +412,7 @@ export default function POSPage() {
         </div>
 
         {/* ── Desktop: Cart sidebar ── */}
-        <div className="hidden lg:flex w-80 flex-col bg-white border-l border-brew-100">
+        <div className="hidden lg:flex w-80 flex-col bg-white border-l border-brew-100 h-full overflow-hidden">
           <CartPanel />
         </div>
 
@@ -435,7 +435,7 @@ export default function POSPage() {
         {cartOpen && (
           <div className="lg:hidden fixed inset-0 z-50">
             <div className="absolute inset-0 bg-black/50" onClick={() => setCartOpen(false)} />
-            <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl max-h-[85vh] flex flex-col animate-slide-up">
+            <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl max-h-[85vh] flex flex-col overflow-hidden animate-slide-up">
               <div className="w-12 h-1.5 bg-brew-200 rounded-full mx-auto mt-3 mb-1" />
               <CartPanel onClose={() => setCartOpen(false)} showClose />
             </div>
