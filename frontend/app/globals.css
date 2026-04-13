@@ -84,11 +84,11 @@
   animation: slide-up 0.25s ease-out;
 }
 
-/* Toast slide-in animation */
-@keyframes slide-in {
-  from { transform: translateX(100%); opacity: 0; }
-  to   { transform: translateX(0); opacity: 1; }
+/* Toast pop-in animation */
+@keyframes pop-in {
+  from { transform: scale(0.8); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
 }
-.animate-slide-in {
-  animation: slide-in 0.3s ease-out;
+.animate-pop-in {
+  animation: pop-in 0.2s ease-out;
 }
