@@ -2,7 +2,7 @@
 // app/login/page.tsx
 // Login screen with Google OAuth + email/password
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/store/AuthContext';
 import { getSafeRedirect } from '@/lib/safeRedirect';
@@ -12,7 +12,7 @@ declare global {
   interface Window { google?: any; }
 }
 
-export default function LoginPage() {
+function LoginContent() {
   const { login, loginWithGoogle, user, loading, needsSetup } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -152,5 +152,17 @@ export default function LoginPage() {
         </div>
       </div>
     </>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-espresso-950 via-espresso-900 to-brew-900 flex items-center justify-center">
+        <span className="text-4xl animate-pulse">☕</span>
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }
