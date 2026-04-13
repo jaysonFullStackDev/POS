@@ -85,7 +85,8 @@ function CartRow({ item, onQty, onRemove }: {
 function ReceiptModal({ sale, onClose }: { sale: Sale; onClose: () => void }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 print-area">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm max-h-[90vh] flex flex-col print-area">
+        <div className="overflow-y-auto p-6 flex-1">
         <div className="text-center mb-4">
           <span className="text-3xl">☕</span>
           <h2 className="font-display font-bold text-espresso-900 text-xl">BrewPOS</h2>
@@ -151,8 +152,9 @@ function ReceiptModal({ sale, onClose }: { sale: Sale; onClose: () => void }) {
         <div className="text-center mt-4 text-xs text-espresso-400">
           Thank you for your visit! ☕
         </div>
+        </div>
 
-        <div className="flex gap-3 mt-6 no-print">
+        <div className="p-6 pt-0 flex gap-3 no-print border-t border-brew-100">
           <button onClick={() => window.print()}
             className="btn-secondary flex-1 text-sm">
             🖨️ Print
