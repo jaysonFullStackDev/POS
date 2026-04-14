@@ -160,6 +160,7 @@ function LoginContent() {
                 )}
 
                 {/* Google Sign-In */}
+                <p className="text-xs text-espresso-400 text-center mb-2">For shop owners / admin</p>
                 <div ref={googleBtnRef} className="flex justify-center mb-4" />
 
                 <div className="relative mb-4">
@@ -167,7 +168,7 @@ function LoginContent() {
                     <div className="w-full border-t border-brew-200" />
                   </div>
                   <div className="relative flex justify-center text-xs">
-                    <span className="bg-white px-3 text-espresso-400">or sign in with email</span>
+                    <span className="bg-white px-3 text-espresso-400">or for staff accounts</span>
                   </div>
                 </div>
 
