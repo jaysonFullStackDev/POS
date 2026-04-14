@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import AppShell from '@/components/layout/AppShell';
 import { api } from '@/lib/api';
 import type { Sale } from '@/types';
+import { PaymentBadge } from '@/lib/payments';
 import clsx from 'clsx';
 
 const fmt = (n: number) =>
@@ -199,9 +200,7 @@ export default function SalesHistoryPage() {
                     </td>
                     <td className="px-4 py-2.5 text-espresso-700">{sale.cashier_name || '—'}</td>
                     <td className="px-4 py-2.5 text-center">
-                      <span className={clsx('badge capitalize', pmColor(sale.payment_method))}>
-                        {sale.payment_method}
-                      </span>
+                      <PaymentBadge method={sale.payment_method} />
                     </td>
                     <td className="px-4 py-2.5 text-right font-bold text-espresso-900">
                       {fmt(sale.total_amount)}

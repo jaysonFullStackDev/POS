@@ -7,6 +7,8 @@ import { useAuth } from '@/store/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import { Banknote, CreditCard, Smartphone, Building2, Landmark } from 'lucide-react';
+
 const FEATURES = [
   { icon: '🛒', title: 'Point of Sale', desc: 'Fast, intuitive cashier screen with real-time cart and multiple payment methods.' },
   { icon: '👨🍳', title: 'Kitchen Display', desc: 'Orders appear instantly via WebSocket. Track pending, preparing, and ready orders.' },
@@ -31,12 +33,12 @@ const ROLES = [
 ];
 
 const PAYMENTS = [
-  { icon: '💵', label: 'Cash' },
-  { icon: '💳', label: 'Card' },
-  { icon: '📱', label: 'GCash' },
-  { icon: '📱', label: 'Maya' },
-  { icon: '🏦', label: 'GoTyme' },
-  { icon: '🏧', label: 'Bank Transfer' },
+  { icon: <Banknote className="w-6 h-6" />,    label: 'Cash',          color: 'text-green-400' },
+  { icon: <CreditCard className="w-6 h-6" />,  label: 'Card',          color: 'text-blue-400' },
+  { icon: <Smartphone className="w-6 h-6" />,  label: 'GCash',         color: 'text-[#007DFE]' },
+  { icon: <Smartphone className="w-6 h-6" />,  label: 'Maya',          color: 'text-[#00C853]' },
+  { icon: <Building2 className="w-6 h-6" />,   label: 'GoTyme',        color: 'text-[#A855F7]' },
+  { icon: <Landmark className="w-6 h-6" />,    label: 'Bank Transfer', color: 'text-slate-300' },
 ];
 
 export default function LandingPage() {
@@ -236,8 +238,8 @@ export default function LandingPage() {
           <div className="grid grid-cols-3 sm:flex sm:flex-wrap sm:justify-center gap-3 sm:gap-4">
             {PAYMENTS.map(m => (
               <div key={m.label}
-                className="bg-white/10 border border-white/10 rounded-2xl px-4 sm:px-6 py-3 text-cream-100 font-medium hover:bg-white/20 hover:border-white/25 hover:scale-105 transition-all duration-300 cursor-default">
-                <span className="text-xl sm:text-2xl block mb-1">{m.icon}</span>
+                className="bg-white/10 border border-white/10 rounded-2xl px-4 sm:px-6 py-3 text-cream-100 font-medium hover:bg-white/20 hover:border-white/25 hover:scale-105 transition-all duration-300 cursor-default flex flex-col items-center gap-1.5">
+                <span className={m.color}>{m.icon}</span>
                 <span className="text-xs sm:text-sm">{m.label}</span>
               </div>
             ))}

@@ -8,6 +8,7 @@ import { api } from '@/lib/api';
 import { useCart } from '@/store/CartContext';
 import { useAuth } from '@/store/AuthContext';
 import { useToast } from '@/components/ui/Toast';
+import { PAYMENT_METHODS } from '@/lib/payments';
 import type { Product, Category, Sale, PaymentMethod } from '@/types';
 import clsx from 'clsx';
 
@@ -282,14 +283,14 @@ function CartPanel({ onClose, showClose }: { onClose?: () => void; showClose?: b
           <div>
             <label className="text-xs text-espresso-500 mb-1.5 block">Payment</label>
             <div className="grid grid-cols-3 gap-1.5">
-              {(['cash', 'card', 'ewallet'] as PaymentMethod[]).map(m => (
-                <button key={m} onClick={() => setPaymentMethod(m)}
-                  className={clsx('py-2 rounded-xl text-xs font-semibold capitalize transition-colors',
-                    paymentMethod === m
+              {PAYMENT_METHODS.map(m => (
+                <button key={m.key} onClick={() => setPaymentMethod(m.key)}
+                  className={clsx('py-2 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1',
+                    paymentMethod === m.key
                       ? 'bg-brew-600 text-white'
-                      : 'bg-brew-50 text-brew-700 hover:bg-brew-100'
+                      : `${m.bg} ${m.color} hover:opacity-80`
                   )}>
-                  {m === 'cash' ? '💵' : m === 'card' ? '💳' : '📱'} {m}
+                  {m.icon} {m.label}
                 </button>
               ))}
             </div>
