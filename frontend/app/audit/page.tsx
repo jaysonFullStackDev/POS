@@ -83,7 +83,7 @@ export default function AuditPage() {
       <div className="p-4 lg:p-6 max-w-6xl mx-auto">
         <div className="mb-6">
           <h1 className="font-display text-2xl font-bold text-espresso-900">
-            📜 Audit Log
+            Audit Log
           </h1>
           <p className="text-sm text-espresso-500">
             {total} total event{total !== 1 ? 's' : ''}
@@ -135,19 +135,18 @@ export default function AuditPage() {
                   <th className="px-4 py-3 font-semibold">User</th>
                   <th className="px-4 py-3 font-semibold">Action</th>
                   <th className="px-4 py-3 font-semibold">Details</th>
-                  <th className="px-4 py-3 font-semibold">IP</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={5} className="text-center py-12 text-espresso-400">
+                    <td colSpan={4} className="text-center py-12 text-espresso-400">
                       Loading...
                     </td>
                   </tr>
                 ) : logs.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="text-center py-12 text-espresso-400">
+                    <td colSpan={4} className="text-center py-12 text-espresso-400">
                       No audit logs found
                     </td>
                   </tr>
@@ -170,9 +169,6 @@ export default function AuditPage() {
                         </td>
                         <td className="px-4 py-3 text-espresso-600 text-xs max-w-xs truncate">
                           {formatDetails(log.details)}
-                        </td>
-                        <td className="px-4 py-3 text-espresso-400 font-mono text-xs">
-                          {log.ip_address || '—'}
                         </td>
                       </tr>
                     );

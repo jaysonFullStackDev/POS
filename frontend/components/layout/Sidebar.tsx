@@ -7,18 +7,22 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/store/AuthContext';
 import { api } from '@/lib/api';
 import clsx from 'clsx';
+import {
+  LayoutDashboard, ShoppingCart, ChefHat, Receipt, Package,
+  Coffee, Wallet, BarChart3, Users, ScrollText, Lock, LogOut, X
+} from 'lucide-react';
 
 const NAV = [
-  { href: '/dashboard',          label: 'Dashboard',    icon: '📊', roles: ['admin','manager','cashier'] },
-  { href: '/pos',                label: 'Point of Sale', icon: '🛒', roles: ['admin','manager','cashier'] },
-  { href: '/kitchen',            label: 'Kitchen',       icon: '👨🍳', roles: ['admin','manager','cashier'] },
-  { href: '/pos/history',        label: 'Sales History', icon: '🧾', roles: ['admin','manager','cashier'] },
-  { href: '/inventory',          label: 'Inventory',     icon: '📦', roles: ['admin','manager'] },
-  { href: '/inventory/products', label: 'Products',      icon: '☕', roles: ['admin','manager'] },
-  { href: '/accounting',         label: 'Accounting',    icon: '💰', roles: ['admin','manager'] },
-  { href: '/reports',            label: 'Reports',       icon: '📈', roles: ['admin','manager'] },
-  { href: '/dashboard/users',    label: 'Staff',         icon: '👥', roles: ['admin'] },
-  { href: '/audit',              label: 'Audit Log',     icon: '📜', roles: ['admin'] },
+  { href: '/dashboard',          label: 'Dashboard',    Icon: LayoutDashboard, roles: ['admin','manager','cashier'] },
+  { href: '/pos',                label: 'Point of Sale', Icon: ShoppingCart,   roles: ['admin','manager','cashier'] },
+  { href: '/kitchen',            label: 'Kitchen',       Icon: ChefHat,        roles: ['admin','manager','cashier'] },
+  { href: '/pos/history',        label: 'Sales History', Icon: Receipt,        roles: ['admin','manager','cashier'] },
+  { href: '/inventory',          label: 'Inventory',     Icon: Package,        roles: ['admin','manager'] },
+  { href: '/inventory/products', label: 'Products',      Icon: Coffee,         roles: ['admin','manager'] },
+  { href: '/accounting',         label: 'Accounting',    Icon: Wallet,         roles: ['admin','manager'] },
+  { href: '/reports',            label: 'Reports',       Icon: BarChart3,      roles: ['admin','manager'] },
+  { href: '/dashboard/users',    label: 'Staff',         Icon: Users,          roles: ['admin'] },
+  { href: '/audit',              label: 'Audit Log',     Icon: ScrollText,     roles: ['admin'] },
 ];
 
 interface SidebarProps {
@@ -66,17 +70,15 @@ function ChangePasswordModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6">
-        <h3 className="font-display font-bold text-espresso-900 mb-4">🔒 Change Password</h3>
+        <h3 className="font-display font-bold text-espresso-900 mb-4 flex items-center gap-2">
+          <Lock className="w-5 h-5" /> Change Password
+        </h3>
 
         {error && (
-          <div className="mb-3 p-2.5 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
-            {error}
-          </div>
+          <div className="mb-3 p-2.5 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">{error}</div>
         )}
         {success && (
-          <div className="mb-3 p-2.5 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
-            {success}
-          </div>
+          <div className="mb-3 p-2.5 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">{success}</div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-3">
@@ -123,7 +125,6 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           .then(items => setLowStockCount(Array.isArray(items) ? items.length : 0))
           .catch(() => {});
       };
-      // Delay initial fetch to let auth settle
       const timeout = setTimeout(fetchLowStock, 2000);
       const interval = setInterval(fetchLowStock, 60_000);
       return () => { clearTimeout(timeout); clearInterval(interval); };
@@ -142,12 +143,8 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
   return (
     <>
-      {/* Mobile overlay backdrop */}
       {open && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={onClose}
-        />
+        <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={onClose} />
       )}
 
       <aside className={clsx(
@@ -157,16 +154,14 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         {/* Logo */}
         <div className="flex items-center justify-between px-5 py-5 border-b border-espresso-800">
           <div className="flex items-center gap-3">
-            <span className="text-2xl">☕</span>
+            <Coffee className="w-7 h-7 text-brew-400" />
             <div>
-              <p className="font-display font-bold text-cream-100 text-lg leading-tight">
-                BrewPOS
-              </p>
+              <p className="font-display font-bold text-cream-100 text-lg leading-tight">BrewPOS</p>
               <p className="text-espresso-400 text-xs">Coffee Manager</p>
             </div>
           </div>
-          <button onClick={onClose} className="lg:hidden text-espresso-400 hover:text-cream-100 text-xl">
-            ✕
+          <button onClick={onClose} className="lg:hidden text-espresso-400 hover:text-cream-100">
+            <X className="w-5 h-5" />
           </button>
         </div>
 
@@ -186,7 +181,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                     : 'text-espresso-300 hover:bg-espresso-800 hover:text-cream-100'
                 )}
               >
-                <span className="text-base">{link.icon}</span>
+                <link.Icon className="w-4.5 h-4.5" />
                 {link.label}
                 {link.href === '/inventory' && lowStockCount > 0 && (
                   <span className="ml-auto w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
@@ -207,10 +202,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
             </div>
             <div className="min-w-0">
               <p className="text-cream-100 text-sm font-medium truncate">{user?.name}</p>
-              <span className={clsx(
-                'badge text-xs capitalize',
-                roleBadgeColor[user?.role || 'cashier']
-              )}>
+              <span className={clsx('badge text-xs capitalize', roleBadgeColor[user?.role || 'cashier'])}>
                 {user?.role}
               </span>
             </div>
@@ -218,16 +210,16 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           <button
             onClick={() => setShowChangePw(true)}
             className="w-full text-left text-xs text-espresso-400 hover:text-brew-400
-                       transition-colors py-1 px-1 mb-1"
+                       transition-colors py-1 px-1 mb-1 flex items-center gap-2"
           >
-            🔒 Change Password
+            <Lock className="w-3.5 h-3.5" /> Change Password
           </button>
           <button
             onClick={logout}
             className="w-full text-left text-xs text-espresso-400 hover:text-red-400
-                       transition-colors py-1 px-1"
+                       transition-colors py-1 px-1 flex items-center gap-2"
           >
-            ← Sign out
+            <LogOut className="w-3.5 h-3.5" /> Sign out
           </button>
         </div>
       </aside>
