@@ -276,17 +276,10 @@ export default function LandingPage() {
 
       {/* ── Footer ── */}
       <footer className="bg-espresso-950 border-t border-espresso-800 px-4 sm:px-6 py-6 sm:py-8">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-lg">☕</span>
-            <span className="font-display font-bold text-cream-100">BrewPOS</span>
-            <span className="text-xs text-espresso-500 ml-2 hidden sm:inline">Built for small coffee shop owners</span>
-          </div>
-          <div className="flex items-center gap-6 text-sm text-espresso-400">
-            <Link href="/login" className="hover:text-cream-100 transition-colors">Sign In</Link>
-            <a href="https://github.com/jaysonFullStackDev/POS" target="_blank" rel="noopener"
-              className="hover:text-cream-100 transition-colors">GitHub</a>
-          </div>
+        <div className="max-w-6xl mx-auto flex items-center justify-center gap-2">
+          <span className="text-lg">☕</span>
+          <span className="font-display font-bold text-cream-100">BrewPOS</span>
+          <span className="text-xs text-espresso-500 ml-2 hidden sm:inline">Built for small coffee shop owners</span>
         </div>
       </footer>
     </div>
