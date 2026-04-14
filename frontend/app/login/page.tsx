@@ -1,6 +1,5 @@
 'use client';
 // app/login/page.tsx
-// Sign in screen — email/password + Google
 
 import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -24,15 +23,8 @@ function LoginContent() {
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
   const [error,    setError]    = useState('');
-  const [busy,     setBusy]     = useState(false);
+  const [loggingIn, setLoggingIn] = useState<string | null>(null);
   const googleBtnRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (isDemo && !user && !loading) {
-      setEmail('admin@brewpos.com');
-      setPassword('Admin@123');
-    }
-  }, [isDemo, user, loading]);
 
   useEffect(() => {
     if (!loading && user) {
@@ -42,17 +34,15 @@ function LoginContent() {
 
   const handleGoogleResponse = useCallback(async (response: any) => {
     setError('');
-    setBusy(true);
+    setLoggingIn('Signing in with Google');
     try {
       await loginWithGoogle(response.credential);
     } catch (err: any) {
       setError(err.message || 'Google sign-in failed');
-    } finally {
-      setBusy(false);
+      setLoggingIn(null);
     }
   }, [loginWithGoogle]);
 
-  // Render Google button on mount (works on client-side navigation too)
   useEffect(() => {
     if (isDemo) return;
     let cancelled = false;
@@ -80,15 +70,41 @@ function LoginContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setBusy(true);
+    setLoggingIn('Signing in');
     try {
       await login(email, password);
     } catch (err: any) {
       setError(err.message || 'Login failed');
-    } finally {
-      setBusy(false);
+      setLoggingIn(null);
     }
   };
+
+  const handleDemoLogin = async (label: string, demoEmail: string, pw: string) => {
+    setError('');
+    setLoggingIn(`Logging in as ${label}`);
+    try {
+      await login(demoEmail, pw);
+    } catch (err: any) {
+      setError(err.message || 'Login failed');
+      setLoggingIn(null);
+    }
+  };
+
+  // Full-screen loading state
+  if (loggingIn) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-espresso-950 via-espresso-900 to-brew-900 flex flex-col items-center justify-center">
+        <span className="text-5xl block mb-4 animate-bounce-slow">☕</span>
+        <p className="text-cream-100 font-display font-bold text-xl mb-2">{loggingIn}</p>
+        <p className="text-brew-400 text-sm">Preparing your workspace</p>
+        <div className="mt-6 flex justify-center gap-1.5">
+          <div className="w-2 h-2 bg-brew-400 rounded-full animate-pulse" style={{ animationDelay: '0ms' }} />
+          <div className="w-2 h-2 bg-brew-400 rounded-full animate-pulse" style={{ animationDelay: '150ms' }} />
+          <div className="w-2 h-2 bg-brew-400 rounded-full animate-pulse" style={{ animationDelay: '300ms' }} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -130,19 +146,12 @@ function LoginContent() {
 
                 <div className="space-y-2">
                   {([
-                    { role: 'admin', label: 'Admin', desc: 'Full access — manage everything', icon: '👑', email: 'admin@brewpos.com', pw: 'Admin@123' },
-                    { role: 'manager', label: 'Manager', desc: 'POS, inventory, accounting', icon: '📋', email: 'manager@brewpos.com', pw: 'Manager@123' },
-                    { role: 'cashier', label: 'Cashier', desc: 'POS and kitchen only', icon: '🛒', email: 'cashier@brewpos.com', pw: 'Cashier@123' },
-                  ] as const).map(d => (
-                    <button key={d.role}
-                      disabled={busy}
-                      onClick={async () => {
-                        setError('');
-                        setBusy(true);
-                        try { await login(d.email, d.pw); }
-                        catch (err: any) { setError(err.message || 'Login failed'); }
-                        finally { setBusy(false); }
-                      }}
+                    { label: 'Admin', desc: 'Full access — manage everything', icon: '👑', email: 'admin@brewpos.com', pw: 'Admin@123' },
+                    { label: 'Manager', desc: 'POS, inventory, accounting', icon: '📋', email: 'manager@brewpos.com', pw: 'Manager@123' },
+                    { label: 'Cashier', desc: 'POS and kitchen only', icon: '🛒', email: 'cashier@brewpos.com', pw: 'Cashier@123' },
+                  ]).map(d => (
+                    <button key={d.label}
+                      onClick={() => handleDemoLogin(d.label, d.email, d.pw)}
                       className="w-full flex items-center gap-3 p-3 rounded-2xl border border-brew-100 hover:border-brew-400 hover:bg-brew-50 transition-all text-left active:scale-[0.98]">
                       <span className="text-2xl">{d.icon}</span>
                       <div>
@@ -163,7 +172,6 @@ function LoginContent() {
                   <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">{error}</div>
                 )}
 
-                {/* Google Sign-In */}
                 <p className="text-xs text-espresso-400 text-center mb-2">Shop owner</p>
                 <div ref={googleBtnRef} className="flex justify-center mb-4" />
 
@@ -187,8 +195,8 @@ function LoginContent() {
                     <input type="password" value={password} onChange={e => setPassword(e.target.value)}
                       className="input" placeholder="••••••••" required />
                   </div>
-                  <button type="submit" disabled={busy} className="btn-primary w-full py-3 text-base mt-2">
-                    {busy ? 'Signing in…' : 'Sign In'}
+                  <button type="submit" className="btn-primary w-full py-3 text-base mt-2">
+                    Sign In
                   </button>
                 </form>
               </>

@@ -1,6 +1,5 @@
 'use client';
 // app/signup/page.tsx
-// Create account — Google OAuth signup
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
@@ -17,7 +16,7 @@ export default function SignupPage() {
   const { loginWithGoogle, user, loading, needsSetup } = useAuth();
   const router = useRouter();
   const [error, setError] = useState('');
-  const [busy, setBusy]   = useState(false);
+  const [signingUp, setSigningUp] = useState(false);
   const btnRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -28,23 +27,20 @@ export default function SignupPage() {
 
   const handleGoogleResponse = useCallback(async (response: any) => {
     setError('');
-    setBusy(true);
+    setSigningUp(true);
     try {
       await loginWithGoogle(response.credential);
     } catch (err: any) {
       setError(err.message || 'Google sign-up failed');
-    } finally {
-      setBusy(false);
+      setSigningUp(false);
     }
   }, [loginWithGoogle]);
 
-  // Re-render Google button every time this component mounts
   useEffect(() => {
     let cancelled = false;
     const render = () => {
       if (cancelled || !btnRef.current) return;
       if (window.google) {
-        // Clear previous button
         btnRef.current.innerHTML = '';
         window.google.accounts.id.initialize({
           client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
@@ -55,11 +51,8 @@ export default function SignupPage() {
         });
       }
     };
-    // If already loaded, render now
-    if (window.google) {
-      render();
-    } else {
-      // Poll until loaded
+    if (window.google) { render(); }
+    else {
       const interval = setInterval(() => {
         if (window.google) { render(); clearInterval(interval); }
       }, 100);
@@ -67,6 +60,22 @@ export default function SignupPage() {
     }
     return () => { cancelled = true; };
   }, [handleGoogleResponse]);
+
+  // Full-screen loading state
+  if (signingUp) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-espresso-950 via-espresso-900 to-brew-900 flex flex-col items-center justify-center">
+        <span className="text-5xl block mb-4 animate-bounce-slow">☕</span>
+        <p className="text-cream-100 font-display font-bold text-xl mb-2">Creating your shop</p>
+        <p className="text-brew-400 text-sm">Setting up your workspace</p>
+        <div className="mt-6 flex justify-center gap-1.5">
+          <div className="w-2 h-2 bg-brew-400 rounded-full animate-pulse" style={{ animationDelay: '0ms' }} />
+          <div className="w-2 h-2 bg-brew-400 rounded-full animate-pulse" style={{ animationDelay: '150ms' }} />
+          <div className="w-2 h-2 bg-brew-400 rounded-full animate-pulse" style={{ animationDelay: '300ms' }} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -104,14 +113,8 @@ export default function SignupPage() {
               <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">{error}</div>
             )}
 
-            {/* Google Sign-Up button */}
             <div ref={btnRef} className="flex justify-center mb-6" />
 
-            {busy && (
-              <p className="text-center text-sm text-espresso-400 animate-pulse">Creating your account…</p>
-            )}
-
-            {/* What you get */}
             <div className="border-t border-brew-100 pt-5 mt-2">
               <p className="text-xs text-espresso-400 uppercase tracking-wide font-semibold mb-3">What you get</p>
               <ul className="space-y-2">
