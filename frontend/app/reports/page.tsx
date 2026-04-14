@@ -51,13 +51,13 @@ export default function ReportsPage() {
 
   return (
     <AppShell requiredRole="manager">
-      <div className="p-6 max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-display font-bold text-espresso-900">Reports & Analytics</h1>
+      <div className="p-3 sm:p-6 max-w-6xl mx-auto">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl font-display font-bold text-espresso-900">Reports & Analytics</h1>
         </div>
 
         {/* Filters */}
-        <div className="card p-4 mb-5 flex flex-wrap gap-3 items-center">
+        <div className="card p-3 sm:p-4 mb-4 sm:mb-5 flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3 items-stretch sm:items-center">
           <div className="flex gap-1">
             {(['daily','weekly','monthly'] as Period[]).map(p => (
               <button key={p}
@@ -70,16 +70,16 @@ export default function ReportsPage() {
               </button>
             ))}
           </div>
-          <div className="flex gap-2 items-center ml-auto">
+          <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center sm:ml-auto">
             <label className="text-sm text-espresso-500">From</label>
-            <input type="date" value={from} onChange={e => setFrom(e.target.value)} className="input w-36" />
+            <input type="date" value={from} onChange={e => setFrom(e.target.value)} className="input w-full sm:w-36" />
             <label className="text-sm text-espresso-500">To</label>
-            <input type="date" value={to}   onChange={e => setTo(e.target.value)}   className="input w-36" />
+            <input type="date" value={to}   onChange={e => setTo(e.target.value)}   className="input w-full sm:w-36" />
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-5">
+        <div className="flex gap-2 mb-4 sm:mb-5 overflow-x-auto pb-1">
           {([
             { key: 'sales',     label: '📈 Sales Trend'    },
             { key: 'products',  label: '🏆 Top Products'   },

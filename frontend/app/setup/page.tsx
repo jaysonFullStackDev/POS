@@ -74,15 +74,15 @@ export default function SetupPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-espresso-950 via-espresso-900 to-brew-900
-                    flex items-center justify-center p-4">
-      <div className="w-full max-w-lg">
-        <div className="text-center mb-8">
-          <span className="text-4xl">☕</span>
-          <h1 className="text-2xl font-display font-bold text-cream-100 mt-2">Set Up Your Shop</h1>
-          <p className="text-brew-300 text-sm mt-1">Step {step} of 2</p>
+                    flex items-center justify-center p-3 sm:p-4">
+      <div className="w-full max-w-lg my-4">
+        <div className="text-center mb-5 sm:mb-8">
+          <span className="text-3xl sm:text-4xl">☕</span>
+          <h1 className="text-xl sm:text-2xl font-display font-bold text-cream-100 mt-2">Set Up Your Shop</h1>
+          <p className="text-brew-300 text-xs sm:text-sm mt-1">Step {step} of 2</p>
         </div>
 
-        <div className="bg-white/95 backdrop-blur rounded-3xl shadow-2xl p-8">
+        <div className="bg-white/95 backdrop-blur rounded-2xl sm:rounded-3xl shadow-2xl p-5 sm:p-8">
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">{error}</div>
           )}

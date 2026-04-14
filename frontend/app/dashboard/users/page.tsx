@@ -127,12 +127,12 @@ export default function UsersPage() {
 
   return (
     <AppShell requiredRole="admin">
-      <div className="p-6 max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-display font-bold text-espresso-900">
+      <div className="p-3 sm:p-6 max-w-4xl mx-auto">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl font-display font-bold text-espresso-900">
             Staff Management
           </h1>
-          <button onClick={() => setShowAdd(true)} className="btn-primary text-sm">
+          <button onClick={() => setShowAdd(true)} className="btn-primary text-sm w-full sm:w-auto">
             + Add Staff
           </button>
         </div>
@@ -141,7 +141,8 @@ export default function UsersPage() {
           <div className="card p-10 text-center animate-pulse text-espresso-400">Loading…</div>
         ) : (
           <div className="card overflow-hidden">
-            <table className="w-full text-sm">
+            <div className="overflow-x-auto">
+            <table className="w-full text-sm min-w-[500px]">
               <thead className="bg-brew-50 text-espresso-600 text-xs uppercase tracking-wide">
                 <tr>
                   <th className="text-left px-4 py-3">Name</th>
@@ -187,6 +188,7 @@ export default function UsersPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         )}
       </div>

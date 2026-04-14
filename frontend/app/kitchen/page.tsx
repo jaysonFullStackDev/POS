@@ -162,14 +162,14 @@ export default function KitchenPage() {
 
   return (
     <AppShell>
-      <div className="p-4 lg:p-6 h-screen flex flex-col">
+      <div className="p-3 sm:p-4 lg:p-6 h-screen flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
           <div>
-            <h1 className="font-display text-2xl font-bold text-espresso-900">
+            <h1 className="font-display text-lg sm:text-2xl font-bold text-espresso-900">
               👨‍🍳 Kitchen Display
             </h1>
-            <p className="text-sm text-espresso-500">
+            <p className="text-xs sm:text-sm text-espresso-500">
               {orders.length} active order{orders.length !== 1 ? 's' : ''}
             </p>
           </div>

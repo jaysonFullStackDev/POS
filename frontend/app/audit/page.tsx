@@ -80,9 +80,9 @@ export default function AuditPage() {
 
   return (
     <AppShell requiredRole="admin">
-      <div className="p-4 lg:p-6 max-w-6xl mx-auto">
-        <div className="mb-6">
-          <h1 className="font-display text-2xl font-bold text-espresso-900">
+      <div className="p-3 sm:p-4 lg:p-6 max-w-6xl mx-auto">
+        <div className="mb-4 sm:mb-6">
+          <h1 className="font-display text-xl sm:text-2xl font-bold text-espresso-900">
             Audit Log
           </h1>
           <p className="text-sm text-espresso-500">
@@ -91,13 +91,13 @@ export default function AuditPage() {
         </div>
 
         {/* Filters */}
-        <div className="card p-4 mb-4 flex flex-wrap gap-3 items-end">
+        <div className="card p-3 sm:p-4 mb-4 flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3 items-stretch sm:items-end">
           <div>
             <label className="text-xs font-medium text-espresso-600 block mb-1">Action</label>
             <select
               value={actionFilter}
               onChange={e => setActionFilter(e.target.value)}
-              className="input py-1.5 text-sm w-44"
+              className="input py-1.5 text-sm w-full sm:w-44"
             >
               <option value="">All actions</option>
               {ACTIONS.map(a => (
@@ -108,12 +108,12 @@ export default function AuditPage() {
           <div>
             <label className="text-xs font-medium text-espresso-600 block mb-1">From</label>
             <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)}
-              className="input py-1.5 text-sm w-36" />
+              className="input py-1.5 text-sm w-full sm:w-36" />
           </div>
           <div>
             <label className="text-xs font-medium text-espresso-600 block mb-1">To</label>
             <input type="date" value={toDate} onChange={e => setToDate(e.target.value)}
-              className="input py-1.5 text-sm w-36" />
+              className="input py-1.5 text-sm w-full sm:w-36" />
           </div>
           {(actionFilter || fromDate || toDate) && (
             <button
@@ -128,7 +128,7 @@ export default function AuditPage() {
         {/* Table */}
         <div className="card overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm min-w-[600px]">
               <thead>
                 <tr className="bg-brew-50 text-espresso-700 text-left">
                   <th className="px-4 py-3 font-semibold">Time</th>
