@@ -94,27 +94,27 @@ function LoginContent() {
     <>
       <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
       <div className="min-h-screen bg-gradient-to-br from-espresso-950 via-espresso-900 to-brew-900
-                      flex items-center justify-center p-4">
+                      flex items-center justify-center p-3 sm:p-4">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full border-4 border-brew-700/20" />
           <div className="absolute -bottom-20 -right-20 w-80 h-80 rounded-full border-4 border-brew-600/20" />
         </div>
 
-        <div className="relative w-full max-w-sm">
-          <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-brew-400 hover:text-cream-100 transition-colors mb-6">
+        <div className="relative w-full max-w-sm my-4">
+          <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-brew-400 hover:text-cream-100 transition-colors mb-4 sm:mb-6">
             <ArrowLeft className="w-4 h-4" /> Back to home
           </Link>
-          <div className="text-center mb-8">
+          <div className="text-center mb-5 sm:mb-8">
             <Link href="/">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-brew-500 rounded-2xl shadow-lg mb-4">
-                <span className="text-3xl">☕</span>
+              <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-brew-500 rounded-2xl shadow-lg mb-3 sm:mb-4">
+                <span className="text-2xl sm:text-3xl">☕</span>
               </div>
-              <h1 className="text-3xl font-display font-bold text-cream-100">BrewPOS</h1>
+              <h1 className="text-2xl sm:text-3xl font-display font-bold text-cream-100">BrewPOS</h1>
             </Link>
-            <p className="text-brew-300 text-sm mt-1">Coffee Shop Management</p>
+            <p className="text-brew-300 text-xs sm:text-sm mt-1">Coffee Shop Management</p>
           </div>
 
-          <div className="bg-white/95 backdrop-blur rounded-3xl shadow-2xl p-8">
+          <div className="bg-white/95 backdrop-blur rounded-2xl sm:rounded-3xl shadow-2xl p-5 sm:p-8">
             {isDemo ? (
               <>
                 <h2 className="text-xl font-display font-semibold text-espresso-900 mb-2">
