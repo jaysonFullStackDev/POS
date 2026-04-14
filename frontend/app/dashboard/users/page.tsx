@@ -79,8 +79,8 @@ function AddUserModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =
           </div>
           <div>
             <label className="text-xs font-medium text-espresso-600 block mb-1">Role</label>
-            <div className="grid grid-cols-3 gap-2">
-              {(['cashier', 'manager', 'admin'] as UserRole[]).map(role => (
+            <div className="grid grid-cols-2 gap-2">
+              {(['cashier', 'manager'] as UserRole[]).map(role => (
                 <button key={role}
                   onClick={() => setForm(f => ({ ...f, role }))}
                   className={clsx('py-2 rounded-xl text-xs font-semibold capitalize transition-colors',
@@ -94,7 +94,6 @@ function AddUserModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =
               ))}
             </div>
             <p className="text-xs text-espresso-400 mt-2">
-              {form.role === 'admin'   && '⚠️ Full access including user management'}
               {form.role === 'manager' && '📊 Inventory, accounting, and reports access'}
               {form.role === 'cashier' && '🛒 POS and dashboard only'}
             </p>
