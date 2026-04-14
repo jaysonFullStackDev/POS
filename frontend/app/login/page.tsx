@@ -8,6 +8,7 @@ import { useAuth } from '@/store/AuthContext';
 import { getSafeRedirect } from '@/lib/safeRedirect';
 import Link from 'next/link';
 import Script from 'next/script';
+import { ArrowLeft } from 'lucide-react';
 
 declare global {
   interface Window { google?: any; }
@@ -100,6 +101,9 @@ function LoginContent() {
         </div>
 
         <div className="relative w-full max-w-sm">
+          <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-brew-400 hover:text-cream-100 transition-colors mb-6">
+            <ArrowLeft className="w-4 h-4" /> Back to home
+          </Link>
           <div className="text-center mb-8">
             <Link href="/">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-brew-500 rounded-2xl shadow-lg mb-4">
