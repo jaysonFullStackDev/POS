@@ -14,6 +14,7 @@ const ALLOWED_PATHS = [
   '/audit',
   '/login',
   '/setup',
+  '/signup',
   '/',
 ];
 

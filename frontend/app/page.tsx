@@ -76,7 +76,7 @@ export default function LandingPage() {
           </div>
           <div className="hidden sm:flex items-center gap-3">
             <Link href="/login" className="text-sm text-brew-300 hover:text-cream-100 transition-colors">Sign In</Link>
-            <Link href="/login" className="bg-brew-500 hover:bg-brew-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-all hover:shadow-lg hover:shadow-brew-500/25 active:scale-95">
+            <Link href="/signup" className="bg-brew-500 hover:bg-brew-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-all hover:shadow-lg hover:shadow-brew-500/25 active:scale-95">
               Get Started
             </Link>
           </div>
@@ -88,7 +88,7 @@ export default function LandingPage() {
           <div className="sm:hidden bg-espresso-950 border-t border-espresso-800 px-6 py-4 space-y-3">
             <Link href="/login" onClick={() => setMobileMenu(false)}
               className="block text-center text-brew-300 hover:text-cream-100 py-2">Sign In</Link>
-            <Link href="/login" onClick={() => setMobileMenu(false)}
+            <Link href="/signup" onClick={() => setMobileMenu(false)}
               className="block text-center bg-brew-500 text-white font-semibold py-3 rounded-xl">Get Started</Link>
           </div>
         )}
@@ -115,11 +115,11 @@ export default function LandingPage() {
             expense management, and profit reporting.
           </p>
           <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-            <Link href="/login"
+            <Link href="/signup"
               className="bg-brew-500 hover:bg-brew-600 text-white font-bold px-6 sm:px-8 py-3 sm:py-4 rounded-2xl text-base sm:text-lg transition-all shadow-lg shadow-brew-500/25 hover:shadow-xl active:scale-95 hover:-translate-y-0.5">
               ☕ Start Free
             </Link>
-            <Link href="/login"
+            <Link href="/login?demo=true"
               className="bg-white/10 hover:bg-white/20 text-cream-100 font-bold px-6 sm:px-8 py-3 sm:py-4 rounded-2xl text-base sm:text-lg transition-all border border-white/10 hover:border-white/25 active:scale-95">
               Try Demo →
             </Link>
@@ -260,11 +260,11 @@ export default function LandingPage() {
             Join coffee shop owners who manage their business smarter with BrewPOS.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-            <Link href="/login"
+            <Link href="/signup"
               className="bg-white text-espresso-900 font-bold px-6 sm:px-8 py-3 sm:py-4 rounded-2xl text-base sm:text-lg hover:bg-cream-100 transition-all shadow-lg hover:shadow-xl active:scale-95 hover:-translate-y-0.5">
               Get Started Free
             </Link>
-            <Link href="/login"
+            <Link href="/login?demo=true"
               className="bg-white/10 hover:bg-white/20 text-cream-100 font-bold px-6 sm:px-8 py-3 sm:py-4 rounded-2xl text-base sm:text-lg transition-all border border-white/20 hover:border-white/30 active:scale-95">
               Try Demo Account
             </Link>
@@ -290,3 +290,4 @@ export default function LandingPage() {
     </div>
   );
 }
+
