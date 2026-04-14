@@ -141,22 +141,21 @@ export default function SalesHistoryPage() {
 
   return (
     <AppShell>
-      <div className="p-6 max-w-5xl mx-auto">
-        <h1 className="text-2xl font-display font-bold text-espresso-900 mb-6">
+      <div className="p-3 sm:p-6 max-w-5xl mx-auto">
+        <h1 className="text-xl sm:text-2xl font-display font-bold text-espresso-900 mb-4 sm:mb-6">
           Sales History
         </h1>
 
         {/* Filters */}
-        <div className="card p-4 mb-5 flex flex-wrap gap-3 items-center">
+        <div className="card p-3 sm:p-4 mb-4 sm:mb-5 flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3 items-stretch sm:items-center">
           <label className="text-sm text-espresso-600 font-medium">Date range:</label>
-          <input type="date" value={from} onChange={e => setFrom(e.target.value)} className="input w-36" />
-          <span className="text-espresso-400 text-sm">to</span>
-          <input type="date" value={to}   onChange={e => setTo(e.target.value)}   className="input w-36" />
+          <input type="date" value={from} onChange={e => setFrom(e.target.value)} className="input w-full sm:w-36" />
+          <span className="text-espresso-400 text-sm text-center">to</span>
+          <input type="date" value={to}   onChange={e => setTo(e.target.value)}   className="input w-full sm:w-36" />
 
-          {/* Summary */}
           {!loading && (
-            <div className="ml-auto flex gap-4">
-              <div className="text-right">
+            <div className="flex gap-4 sm:ml-auto justify-between sm:justify-end">
+              <div className="text-left sm:text-right">
                 <p className="text-xs text-espresso-400 uppercase tracking-wide">Transactions</p>
                 <p className="text-lg font-bold text-espresso-900">{sales.length}</p>
               </div>
@@ -170,6 +169,7 @@ export default function SalesHistoryPage() {
 
         {/* Table */}
         <div className="card overflow-hidden">
+          <div className="overflow-x-auto">
           {loading ? (
             <div className="p-10 text-center text-espresso-400 animate-pulse">Loading sales…</div>
           ) : (
@@ -214,6 +214,7 @@ export default function SalesHistoryPage() {
               </tbody>
             </table>
           )}
+          </div>
           {!loading && sales.length === 0 && (
             <div className="p-10 text-center text-espresso-400">
               <p className="text-3xl mb-2">📭</p>

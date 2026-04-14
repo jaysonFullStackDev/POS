@@ -19,13 +19,13 @@ function StatCard({ icon, label, value, sub, color }: {
   sub?: string; color: string;
 }) {
   return (
-    <div className={`card p-5 border-l-4 ${color}`}>
+    <div className={`card p-4 sm:p-5 border-l-4 ${color}`}>
       <div className="flex items-start justify-between">
         <div>
           <p className="text-xs text-espresso-500 uppercase tracking-wide font-medium">
             {label}
           </p>
-          <p className="text-2xl font-display font-bold text-espresso-900 mt-1">
+          <p className="text-lg sm:text-2xl font-display font-bold text-espresso-900 mt-1">
             {value}
           </p>
           {sub && <p className="text-xs text-espresso-400 mt-1">{sub}</p>}
@@ -59,10 +59,10 @@ export default function DashboardPage() {
 
   return (
     <AppShell>
-      <div className="p-6 max-w-7xl mx-auto">
+      <div className="p-3 sm:p-6 max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-display font-bold text-espresso-900">
+        <div className="mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl font-display font-bold text-espresso-900">
             Dashboard
           </h1>
           <p className="text-espresso-500 text-sm mt-1">
