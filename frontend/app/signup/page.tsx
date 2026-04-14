@@ -2,7 +2,7 @@
 // app/signup/page.tsx
 // Create account — Google OAuth signup
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/store/AuthContext';
 import Link from 'next/link';
@@ -17,6 +17,7 @@ export default function SignupPage() {
   const router = useRouter();
   const [error, setError] = useState('');
   const [busy, setBusy]   = useState(false);
+  const btnRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!loading && user) {
@@ -36,22 +37,39 @@ export default function SignupPage() {
     }
   }, [loginWithGoogle]);
 
-  const initGoogle = useCallback(() => {
+  // Re-render Google button every time this component mounts
+  useEffect(() => {
+    let cancelled = false;
+    const render = () => {
+      if (cancelled || !btnRef.current) return;
+      if (window.google) {
+        // Clear previous button
+        btnRef.current.innerHTML = '';
+        window.google.accounts.id.initialize({
+          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+          callback: handleGoogleResponse,
+        });
+        window.google.accounts.id.renderButton(btnRef.current, {
+          theme: 'outline', size: 'large', width: 320, text: 'signup_with',
+        });
+      }
+    };
+    // If already loaded, render now
     if (window.google) {
-      window.google.accounts.id.initialize({
-        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-        callback: handleGoogleResponse,
-      });
-      window.google.accounts.id.renderButton(
-        document.getElementById('google-signup-btn'),
-        { theme: 'outline', size: 'large', width: 320, text: 'signup_with' }
-      );
+      render();
+    } else {
+      // Poll until loaded
+      const interval = setInterval(() => {
+        if (window.google) { render(); clearInterval(interval); }
+      }, 100);
+      return () => { cancelled = true; clearInterval(interval); };
     }
+    return () => { cancelled = true; };
   }, [handleGoogleResponse]);
 
   return (
     <>
-      <Script src="https://accounts.google.com/gsi/client" onLoad={initGoogle} />
+      <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
       <div className="min-h-screen bg-gradient-to-br from-espresso-950 via-espresso-900 to-brew-900
                       flex items-center justify-center p-4">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -83,7 +101,7 @@ export default function SignupPage() {
             )}
 
             {/* Google Sign-Up button */}
-            <div id="google-signup-btn" className="flex justify-center mb-6" />
+            <div ref={btnRef} className="flex justify-center mb-6" />
 
             {busy && (
               <p className="text-center text-sm text-espresso-400 animate-pulse">Creating your account…</p>
