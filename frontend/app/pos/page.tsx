@@ -396,6 +396,7 @@ function CartPanel({ onClose, showClose }: { onClose?: () => void; showClose?: b
             <div>
               <input type="number" value={amountTendered}
                 onChange={e => setAmountTendered(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') handleCheckout(); }}
                 className="input text-sm" placeholder="Cash tendered…" />
               {parseFloat(amountTendered) >= total && (
                 <p className="text-xs text-green-600 mt-1 font-semibold">
