@@ -98,50 +98,57 @@ function ReceiptModal({ sale, onClose }: { sale: Sale; onClose: () => void }) {
         <title>Receipt ${sale.sale_number}</title>
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { font-family: system-ui, -apple-system, sans-serif; background: white; padding: 8mm; width: 80mm; }
-          .receipt { font-size: 12px; color: #333; }
+          body { font-family: 'Courier New', Courier, monospace; background: white; width: 100%; max-width: 80mm; margin: 0 auto; padding: 4mm; }
+          .receipt { font-size: 16px; color: #000; line-height: 1.6; }
           .center { text-align: center; }
           .bold { font-weight: 700; }
-          .row { display: flex; justify-content: space-between; padding: 2px 0; }
-          .divider { border-top: 1px dashed #ccc; margin: 8px 0; }
-          .total-row { font-size: 14px; font-weight: 700; padding-top: 4px; }
-          .small { font-size: 10px; color: #888; }
-          .mono { font-family: monospace; }
-          .green { color: #16a34a; }
-          .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; }
-          .badge-dine { background: #dbeafe; color: #1d4ed8; }
-          .badge-take { background: #ffedd5; color: #c2410c; }
-          @page { size: 80mm auto; margin: 0; }
+          .row { display: flex; justify-content: space-between; padding: 3px 0; }
+          .divider { border-top: 2px dashed #000; margin: 10px 0; }
+          .total-row { font-size: 22px; font-weight: 900; padding: 6px 0; }
+          .info { font-size: 14px; color: #333; }
+          .item { font-size: 16px; }
+          .green { color: #000; }
+          .shop-name { font-size: 28px; font-weight: 900; font-family: Georgia, serif; letter-spacing: 1px; }
+          .shop-sub { font-size: 13px; color: #555; margin-top: 2px; }
+          .shop-icon { font-size: 36px; }
+          .badge { display: inline-block; padding: 3px 10px; border: 2px solid #000; border-radius: 6px; font-size: 14px; font-weight: 700; }
+          .footer { font-size: 14px; color: #555; margin-top: 14px; }
+          @media print {
+            body { width: 80mm; max-width: 80mm; padding: 2mm; }
+            @page { size: 80mm auto; margin: 0; }
+          }
         </style>
       </head>
       <body>
         <div class="receipt">
-          <div class="center" style="margin-bottom:12px">
-            <div style="font-size:24px">☕</div>
-            <div class="bold" style="font-size:16px;font-family:Georgia,serif">BrewPOS</div>
-            <div class="small">Coffee Shop</div>
+          <div class="center" style="margin-bottom:14px">
+            <div class="shop-icon">☕</div>
+            <div class="shop-name">BrewPOS</div>
+            <div class="shop-sub">Coffee Shop</div>
           </div>
           <div class="divider"></div>
-          <div class="row small"><span>Receipt #</span><span class="mono">${sale.sale_number}</span></div>
-          <div class="row small"><span>Date</span><span>${new Date(sale.created_at).toLocaleString('en-PH')}</span></div>
-          <div class="row small"><span>Cashier</span><span>${sale.cashier_name || ''}</span></div>
-          <div class="row small"><span>Order Type</span><span class="badge ${sale.order_type === 'take_out' ? 'badge-take' : 'badge-dine'}">${sale.order_type === 'take_out' ? '🥡 Take Out' : '🍽️ Dine In'}</span></div>
+          <div class="row info"><span>Receipt #</span><span>${sale.sale_number}</span></div>
+          <div class="row info"><span>Date</span><span>${new Date(sale.created_at).toLocaleString('en-PH')}</span></div>
+          <div class="row info"><span>Cashier</span><span>${sale.cashier_name || ''}</span></div>
+          <div class="row info"><span>Order Type</span><span class="badge">${sale.order_type === 'take_out' ? '🥡 Take Out' : '🍽️ Dine In'}</span></div>
           <div class="divider"></div>
           ${sale.items?.map(item => `
-            <div class="row"><span>${item.product_name} × ${item.quantity}</span><span class="bold">₱${(item.subtotal).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
+            <div class="row item"><span>${item.product_name} × ${item.quantity}</span><span class="bold">₱${(item.subtotal).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
           `).join('') || ''}
           <div class="divider"></div>
-          <div class="row"><span>Subtotal</span><span>₱${sale.subtotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
-          ${sale.discount > 0 ? `<div class="row green"><span>Discount</span><span>-₱${sale.discount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>` : ''}
-          ${sale.tax_amount > 0 ? `<div class="row small"><span>VAT (12%)</span><span>₱${sale.tax_amount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>` : ''}
-          <div class="row total-row"><span>TOTAL</span><span>₱${sale.total_amount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
-          ${sale.payment_method === 'cash' ? `
-            <div class="row small"><span>Cash</span><span>₱${(sale.amount_tendered || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
-            <div class="row bold green"><span>Change</span><span>₱${sale.change_due.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
-          ` : ''}
-          <div class="row small" style="text-transform:capitalize"><span>Payment</span><span>${sale.payment_method.replace('_', ' ')}</span></div>
+          <div class="row item"><span>Subtotal</span><span>₱${sale.subtotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
+          ${sale.discount > 0 ? `<div class="row item"><span>Discount</span><span>-₱${sale.discount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>` : ''}
+          ${sale.tax_amount > 0 ? `<div class="row info"><span>VAT (12%)</span><span>₱${sale.tax_amount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>` : ''}
           <div class="divider"></div>
-          <div class="center small" style="margin-top:8px">Thank you for your visit! ☕</div>
+          <div class="row total-row"><span>TOTAL</span><span>₱${sale.total_amount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
+          <div class="divider"></div>
+          ${sale.payment_method === 'cash' ? `
+            <div class="row item"><span>Cash</span><span>₱${(sale.amount_tendered || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
+            <div class="row item bold"><span>Change</span><span>₱${sale.change_due.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
+          ` : ''}
+          <div class="row info" style="text-transform:capitalize"><span>Payment</span><span>${sale.payment_method.replace('_', ' ')}</span></div>
+          <div class="divider"></div>
+          <div class="center footer">Thank you for your visit! ☕</div>
         </div>
       </body>
       </html>
