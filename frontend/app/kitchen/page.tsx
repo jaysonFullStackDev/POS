@@ -48,7 +48,14 @@ function OrderCard({ order, onAdvance }: { order: KitchenOrder; onAdvance: () =>
         <span className="font-mono font-bold text-espresso-900 text-sm">
           {order.sale_number}
         </span>
-        <span className="text-xs text-espresso-400">{timeAgo(order.created_at)}</span>
+        <div className="flex items-center gap-2">
+          <span className={clsx('badge text-xs',
+            order.order_type === 'take_out' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'
+          )}>
+            {order.order_type === 'take_out' ? '🥡 Take Out' : '🍽️ Dine In'}
+          </span>
+          <span className="text-xs text-espresso-400">{timeAgo(order.created_at)}</span>
+        </div>
       </div>
 
       <div className="space-y-1 mb-3">

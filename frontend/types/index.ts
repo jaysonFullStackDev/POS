@@ -97,6 +97,8 @@ export interface CartItem {
 
 export type PaymentMethod = 'cash' | 'card' | 'ewallet' | 'gcash' | 'maya' | 'gotyme' | 'bank_transfer';
 
+export type OrderType = 'dine_in' | 'take_out';
+
 // ── Sales ─────────────────────────────────────────────────
 export interface Sale {
   id: string;
@@ -108,6 +110,7 @@ export interface Sale {
   tax_amount: number;
   total_amount: number;
   payment_method: PaymentMethod;
+  order_type?: OrderType;
   amount_tendered?: number;
   change_due: number;
   notes?: string;
@@ -165,6 +168,7 @@ export interface KitchenOrder {
   id: string;
   sale_number: string;
   order_status: OrderStatus;
+  order_type?: OrderType;
   created_at: string;
   notes?: string;
   cashier_name?: string;

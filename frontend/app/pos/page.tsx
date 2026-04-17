@@ -9,7 +9,7 @@ import { useCart } from '@/store/CartContext';
 import { useAuth } from '@/store/AuthContext';
 import { useToast } from '@/components/ui/Toast';
 import { PAYMENT_METHODS } from '@/lib/payments';
-import type { Product, Category, Sale, PaymentMethod } from '@/types';
+import type { Product, Category, Sale, PaymentMethod, OrderType } from '@/types';
 import clsx from 'clsx';
 
 const fmt = (n: number) => '₱' + n.toLocaleString('en-PH', { minimumFractionDigits: 2 });
@@ -146,6 +146,9 @@ function ReceiptModal({ sale, onClose }: { sale: Sale; onClose: () => void }) {
             <div className="flex justify-between text-sm text-espresso-500 capitalize">
               <span>Payment</span><span>{sale.payment_method}</span>
             </div>
+            <div className="flex justify-between text-sm text-espresso-500 capitalize">
+              <span>Order Type</span><span>{sale.order_type === 'take_out' ? '🥡 Take Out' : '🍽️ Dine In'}</span>
+            </div>
           </div>
           <div className="text-center mt-4 text-xs text-espresso-400">
             Thank you for your visit! ☕
@@ -171,7 +174,7 @@ function CartPanel({ onClose, showClose }: { onClose?: () => void; showClose?: b
   const { showToast } = useToast();
   const {
     items, subtotal, taxAmount, total, discount,
-    paymentMethod, setPaymentMethod, setDiscount,
+    paymentMethod, setPaymentMethod, orderType, setOrderType, setDiscount,
     removeItem, updateQty, clearCart, itemCount
   } = useCart();
 
@@ -203,6 +206,7 @@ function CartPanel({ onClose, showClose }: { onClose?: () => void; showClose?: b
       const sale = await api.sales.process({
         items: items.map(i => ({ product_id: i.product.id, quantity: i.quantity })),
         payment_method: paymentMethod,
+        order_type: orderType,
         amount_tendered: parseFloat(amountTendered) || null,
         discount,
         notes,
@@ -273,6 +277,24 @@ function CartPanel({ onClose, showClose }: { onClose?: () => void; showClose?: b
       {/* Checkout panel */}
       {items.length > 0 && (
         <div className="border-t border-brew-100 p-4 space-y-3">
+          {/* Order type */}
+          <div>
+            <label className="text-xs text-espresso-500 mb-1.5 block">Order Type</label>
+            <div className="grid grid-cols-2 gap-1.5">
+              {([{ key: 'dine_in', label: 'Dine In', icon: '🍽️' }, { key: 'take_out', label: 'Take Out', icon: '🥡' }] as { key: OrderType; label: string; icon: string }[]).map(t => (
+                <button key={t.key} onClick={() => setOrderType(t.key)}
+                  className={clsx('py-2 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1',
+                    orderType === t.key
+                      ? 'bg-brew-600 text-white'
+                      : 'bg-brew-50 text-brew-700 hover:bg-brew-100'
+                  )}>
+                  {t.icon} {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Discount */}
           <div className="flex items-center gap-2">
             <label className="text-xs text-espresso-500 w-16 shrink-0">Discount</label>
             <input type="number" min="0" value={discount || ''}
