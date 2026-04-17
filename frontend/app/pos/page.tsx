@@ -97,13 +97,20 @@ function ReceiptModal({ sale, onClose }: { sale: Sale; onClose: () => void }) {
       <head>
         <title>Receipt ${sale.sale_number}</title>
         <style>
-          @page { size: 58mm auto; margin: 0; }
+          @page { size: auto; margin: 0; }
           * { margin: 0; padding: 0; box-sizing: border-box; }
-          body {
-            font-family: 'Courier New', Courier, monospace;
+          html, body {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 10mm;
             background: white;
+          }
+          .receipt {
+            font-family: 'Courier New', Courier, monospace;
             width: 58mm;
-            margin: 0;
             padding: 3mm;
             font-size: 11px;
             color: #000;
@@ -123,34 +130,36 @@ function ReceiptModal({ sale, onClose }: { sale: Sale; onClose: () => void }) {
         </style>
       </head>
       <body>
-        <div class="center" style="margin-bottom:6px">
-          <div class="shop-icon">☕</div>
-          <div class="shop-name">BrewPOS</div>
-          <div class="shop-sub">Coffee Shop</div>
+        <div class="receipt">
+          <div class="center" style="margin-bottom:6px">
+            <div class="shop-icon">☕</div>
+            <div class="shop-name">BrewPOS</div>
+            <div class="shop-sub">Coffee Shop</div>
+          </div>
+          <div class="divider"></div>
+          <div class="row small"><span>Receipt #</span><span>${sale.sale_number}</span></div>
+          <div class="row small"><span>Date</span><span>${new Date(sale.created_at).toLocaleString('en-PH')}</span></div>
+          <div class="row small"><span>Cashier</span><span>${sale.cashier_name || ''}</span></div>
+          <div class="row small"><span>Type</span><span class="badge">${sale.order_type === 'take_out' ? '🥡 Take Out' : '🍽️ Dine In'}</span></div>
+          <div class="divider"></div>
+          ${sale.items?.map(item => `
+            <div class="row"><span>${item.product_name} x${item.quantity}</span><span class="bold">₱${(item.subtotal).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
+          `).join('') || ''}
+          <div class="divider"></div>
+          <div class="row"><span>Subtotal</span><span>₱${sale.subtotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
+          ${sale.discount > 0 ? `<div class="row"><span>Discount</span><span>-₱${sale.discount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>` : ''}
+          ${sale.tax_amount > 0 ? `<div class="row small"><span>VAT 12%</span><span>₱${sale.tax_amount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>` : ''}
+          <div class="divider"></div>
+          <div class="total-row"><span>TOTAL</span><span>₱${sale.total_amount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
+          <div class="divider"></div>
+          ${sale.payment_method === 'cash' ? `
+            <div class="row"><span>Cash</span><span>₱${(sale.amount_tendered || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
+            <div class="row bold"><span>Change</span><span>₱${sale.change_due.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
+          ` : ''}
+          <div class="row small" style="text-transform:capitalize"><span>Payment</span><span>${sale.payment_method.replace('_', ' ')}</span></div>
+          <div class="divider"></div>
+          <div class="center footer">Thank you! ☕</div>
         </div>
-        <div class="divider"></div>
-        <div class="row small"><span>Receipt #</span><span>${sale.sale_number}</span></div>
-        <div class="row small"><span>Date</span><span>${new Date(sale.created_at).toLocaleString('en-PH')}</span></div>
-        <div class="row small"><span>Cashier</span><span>${sale.cashier_name || ''}</span></div>
-        <div class="row small"><span>Type</span><span class="badge">${sale.order_type === 'take_out' ? '🥡 Take Out' : '🍽️ Dine In'}</span></div>
-        <div class="divider"></div>
-        ${sale.items?.map(item => `
-          <div class="row"><span>${item.product_name} x${item.quantity}</span><span class="bold">₱${(item.subtotal).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
-        `).join('') || ''}
-        <div class="divider"></div>
-        <div class="row"><span>Subtotal</span><span>₱${sale.subtotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
-        ${sale.discount > 0 ? `<div class="row"><span>Discount</span><span>-₱${sale.discount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>` : ''}
-        ${sale.tax_amount > 0 ? `<div class="row small"><span>VAT 12%</span><span>₱${sale.tax_amount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>` : ''}
-        <div class="divider"></div>
-        <div class="total-row"><span>TOTAL</span><span>₱${sale.total_amount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
-        <div class="divider"></div>
-        ${sale.payment_method === 'cash' ? `
-          <div class="row"><span>Cash</span><span>₱${(sale.amount_tendered || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
-          <div class="row bold"><span>Change</span><span>₱${sale.change_due.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
-        ` : ''}
-        <div class="row small" style="text-transform:capitalize"><span>Payment</span><span>${sale.payment_method.replace('_', ' ')}</span></div>
-        <div class="divider"></div>
-        <div class="center footer">Thank you! ☕</div>
       </body>
       </html>
     `);
