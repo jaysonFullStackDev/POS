@@ -70,30 +70,26 @@
 
 /* Print styles for receipts */
 @media print {
-  /* Hide everything */
-  body > * { display: none !important; }
+  body * { visibility: hidden !important; }
 
-  /* Show only the receipt */
   .print-area,
   .print-area * {
-    display: revert !important;
     visibility: visible !important;
   }
 
   .print-area {
-    position: fixed !important;
-    inset: 0 !important;
-    width: 100% !important;
-    max-width: 80mm !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 80mm !important;
     max-height: none !important;
-    margin: 0 auto !important;
-    padding: 10px !important;
+    margin: 0 !important;
+    padding: 8mm !important;
     background: white !important;
     box-shadow: none !important;
     border: none !important;
     border-radius: 0 !important;
     overflow: visible !important;
-    z-index: 99999 !important;
   }
 
   .no-print { display: none !important; }
@@ -102,6 +98,11 @@
     background: white !important;
     margin: 0 !important;
     padding: 0 !important;
+  }
+
+  @page {
+    size: 80mm auto;
+    margin: 0;
   }
 }
 

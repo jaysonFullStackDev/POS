@@ -85,10 +85,76 @@ function CartRow({ item, onQty, onRemove }: {
 
 // ── Receipt modal ─────────────────────────────────────────
 function ReceiptModal({ sale, onClose }: { sale: Sale; onClose: () => void }) {
+  const handlePrint = () => {
+    const receiptEl = document.getElementById('receipt-content');
+    if (!receiptEl) return;
+
+    const printWindow = window.open('', '_blank', 'width=350,height=600');
+    if (!printWindow) return;
+
+    printWindow.document.write(`
+      <html>
+      <head>
+        <title>Receipt ${sale.sale_number}</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: system-ui, -apple-system, sans-serif; background: white; padding: 8mm; width: 80mm; }
+          .receipt { font-size: 12px; color: #333; }
+          .center { text-align: center; }
+          .bold { font-weight: 700; }
+          .row { display: flex; justify-content: space-between; padding: 2px 0; }
+          .divider { border-top: 1px dashed #ccc; margin: 8px 0; }
+          .total-row { font-size: 14px; font-weight: 700; padding-top: 4px; }
+          .small { font-size: 10px; color: #888; }
+          .mono { font-family: monospace; }
+          .green { color: #16a34a; }
+          .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; }
+          .badge-dine { background: #dbeafe; color: #1d4ed8; }
+          .badge-take { background: #ffedd5; color: #c2410c; }
+          @page { size: 80mm auto; margin: 0; }
+        </style>
+      </head>
+      <body>
+        <div class="receipt">
+          <div class="center" style="margin-bottom:12px">
+            <div style="font-size:24px">☕</div>
+            <div class="bold" style="font-size:16px;font-family:Georgia,serif">BrewPOS</div>
+            <div class="small">Coffee Shop</div>
+          </div>
+          <div class="divider"></div>
+          <div class="row small"><span>Receipt #</span><span class="mono">${sale.sale_number}</span></div>
+          <div class="row small"><span>Date</span><span>${new Date(sale.created_at).toLocaleString('en-PH')}</span></div>
+          <div class="row small"><span>Cashier</span><span>${sale.cashier_name || ''}</span></div>
+          <div class="row small"><span>Order Type</span><span class="badge ${sale.order_type === 'take_out' ? 'badge-take' : 'badge-dine'}">${sale.order_type === 'take_out' ? '🥡 Take Out' : '🍽️ Dine In'}</span></div>
+          <div class="divider"></div>
+          ${sale.items?.map(item => `
+            <div class="row"><span>${item.product_name} × ${item.quantity}</span><span class="bold">₱${(item.subtotal).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
+          `).join('') || ''}
+          <div class="divider"></div>
+          <div class="row"><span>Subtotal</span><span>₱${sale.subtotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
+          ${sale.discount > 0 ? `<div class="row green"><span>Discount</span><span>-₱${sale.discount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>` : ''}
+          ${sale.tax_amount > 0 ? `<div class="row small"><span>VAT (12%)</span><span>₱${sale.tax_amount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>` : ''}
+          <div class="row total-row"><span>TOTAL</span><span>₱${sale.total_amount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
+          ${sale.payment_method === 'cash' ? `
+            <div class="row small"><span>Cash</span><span>₱${(sale.amount_tendered || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
+            <div class="row bold green"><span>Change</span><span>₱${sale.change_due.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
+          ` : ''}
+          <div class="row small" style="text-transform:capitalize"><span>Payment</span><span>${sale.payment_method.replace('_', ' ')}</span></div>
+          <div class="divider"></div>
+          <div class="center small" style="margin-top:8px">Thank you for your visit! ☕</div>
+        </div>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => { printWindow.print(); printWindow.close(); }, 300);
+  };
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 no-print">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm max-h-[90vh] flex flex-col print-area">
-        <div className="overflow-y-auto p-6 flex-1">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm max-h-[90vh] flex flex-col">
+        <div id="receipt-content" className="overflow-y-auto p-6 flex-1">
           <div className="text-center mb-4">
             <span className="text-3xl">☕</span>
             <h2 className="font-display font-bold text-espresso-900 text-xl">BrewPOS</h2>
@@ -154,8 +220,8 @@ function ReceiptModal({ sale, onClose }: { sale: Sale; onClose: () => void }) {
             Thank you for your visit! ☕
           </div>
         </div>
-        <div className="p-6 pt-0 flex gap-3 no-print border-t border-brew-100">
-          <button onClick={() => window.print()}
+        <div className="p-6 pt-0 flex gap-3 border-t border-brew-100">
+          <button onClick={handlePrint}
             className="btn-secondary flex-1 text-sm">
             🖨️ Print
           </button>
