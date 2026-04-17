@@ -1,41 +1,61 @@
-'use client';
+"use client";
 // app/pos/page.tsx
 // Main Point-of-Sale screen — mobile responsive
 
-import { useState, useEffect } from 'react';
-import AppShell from '@/components/layout/AppShell';
-import { api } from '@/lib/api';
-import { useCart } from '@/store/CartContext';
-import { useAuth } from '@/store/AuthContext';
-import { useToast } from '@/components/ui/Toast';
-import { PAYMENT_METHODS } from '@/lib/payments';
-import type { Product, Category, Sale, PaymentMethod, OrderType } from '@/types';
-import clsx from 'clsx';
+import { useState, useEffect } from "react";
+import AppShell from "@/components/layout/AppShell";
+import { api } from "@/lib/api";
+import { useCart } from "@/store/CartContext";
+import { useAuth } from "@/store/AuthContext";
+import { useToast } from "@/components/ui/Toast";
+import { PAYMENT_METHODS } from "@/lib/payments";
+import type {
+  Product,
+  Category,
+  Sale,
+  PaymentMethod,
+  OrderType,
+} from "@/types";
+import clsx from "clsx";
 
-const fmt = (n: number) => '₱' + n.toLocaleString('en-PH', { minimumFractionDigits: 2 });
+const fmt = (n: number) =>
+  "₱" + n.toLocaleString("en-PH", { minimumFractionDigits: 2 });
 
 // ── Product grid card ─────────────────────────────────────
-function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }) {
+function ProductCard({
+  product,
+  onAdd,
+}: {
+  product: Product;
+  onAdd: () => void;
+}) {
   return (
     <button
       onClick={onAdd}
       disabled={!product.is_available}
       className={clsx(
-        'text-left p-3 rounded-2xl border-2 transition-all duration-150 group',
+        "text-left p-3 rounded-2xl border-2 transition-all duration-150 group",
         product.is_available
-          ? 'border-brew-100 hover:border-brew-400 hover:shadow-md bg-white active:scale-95'
-          : 'border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed'
+          ? "border-brew-100 hover:border-brew-400 hover:shadow-md bg-white active:scale-95"
+          : "border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed",
       )}
     >
       <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">
-        {product.category_name?.includes('Pastry') || product.category_name?.includes('Muffin')
-          ? '🥐' : product.category_name?.includes('Cold') ? '🧊'
-          : product.category_name?.includes('Non') ? '🍵' : '☕'}
+        {product.category_name?.includes("Pastry") ||
+        product.category_name?.includes("Muffin")
+          ? "🥐"
+          : product.category_name?.includes("Cold")
+            ? "🧊"
+            : product.category_name?.includes("Non")
+              ? "🍵"
+              : "☕"}
       </div>
       <p className="font-semibold text-espresso-800 text-sm leading-tight line-clamp-2">
         {product.name}
       </p>
-      <p className="text-brew-600 font-bold text-sm mt-1">{fmt(product.price)}</p>
+      <p className="text-brew-600 font-bold text-sm mt-1">
+        {fmt(product.price)}
+      </p>
       {!product.is_available && (
         <span className="text-xs text-red-400">Unavailable</span>
       )}
@@ -44,7 +64,11 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
 }
 
 // ── Cart item row ─────────────────────────────────────────
-function CartRow({ item, onQty, onRemove }: {
+function CartRow({
+  item,
+  onQty,
+  onRemove,
+}: {
   item: { product: Product; quantity: number };
   onQty: (qty: number) => void;
   onRemove: () => void;
@@ -52,21 +76,27 @@ function CartRow({ item, onQty, onRemove }: {
   return (
     <div className="flex items-center gap-2 py-2 border-b border-brew-50">
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-espresso-800 truncate">{item.product.name}</p>
+        <p className="text-sm font-medium text-espresso-800 truncate">
+          {item.product.name}
+        </p>
         <p className="text-xs text-brew-500">{fmt(item.product.price)} each</p>
       </div>
       <div className="flex items-center gap-1">
-        <button onClick={() => onQty(item.quantity - 1)}
+        <button
+          onClick={() => onQty(item.quantity - 1)}
           className="w-7 h-7 rounded-lg bg-brew-100 hover:bg-brew-200 text-brew-700
-                     text-sm font-bold flex items-center justify-center transition-colors">
+                     text-sm font-bold flex items-center justify-center transition-colors"
+        >
           −
         </button>
         <span className="w-8 text-center text-sm font-bold text-espresso-900">
           {item.quantity}
         </span>
-        <button onClick={() => onQty(item.quantity + 1)}
+        <button
+          onClick={() => onQty(item.quantity + 1)}
           className="w-7 h-7 rounded-lg bg-brew-100 hover:bg-brew-200 text-brew-700
-                     text-sm font-bold flex items-center justify-center transition-colors">
+                     text-sm font-bold flex items-center justify-center transition-colors"
+        >
           +
         </button>
       </div>
@@ -75,8 +105,10 @@ function CartRow({ item, onQty, onRemove }: {
           {fmt(item.product.price * item.quantity)}
         </p>
       </div>
-      <button onClick={onRemove}
-        className="text-red-300 hover:text-red-500 transition-colors ml-1 text-lg">
+      <button
+        onClick={onRemove}
+        className="text-red-300 hover:text-red-500 transition-colors ml-1 text-lg"
+      >
         ×
       </button>
     </div>
@@ -86,10 +118,10 @@ function CartRow({ item, onQty, onRemove }: {
 // ── Receipt modal ─────────────────────────────────────────
 function ReceiptModal({ sale, onClose }: { sale: Sale; onClose: () => void }) {
   const handlePrint = () => {
-    const receiptEl = document.getElementById('receipt-content');
+    const receiptEl = document.getElementById("receipt-content");
     if (!receiptEl) return;
 
-    const printWindow = window.open('', '_blank', 'width=350,height=600');
+    const printWindow = window.open("", "_blank", "width=350,height=600");
     if (!printWindow) return;
 
     printWindow.document.write(`
@@ -138,25 +170,35 @@ function ReceiptModal({ sale, onClose }: { sale: Sale; onClose: () => void }) {
           </div>
           <div class="divider"></div>
           <div class="row small"><span>Receipt #</span><span>${sale.sale_number}</span></div>
-          <div class="row small"><span>Date</span><span>${new Date(sale.created_at).toLocaleString('en-PH')}</span></div>
-          <div class="row small"><span>Cashier</span><span>${sale.cashier_name || ''}</span></div>
-          <div class="row small"><span>Type</span><span class="badge">${sale.order_type === 'take_out' ? '🥡 Take Out' : '🍽️ Dine In'}</span></div>
+          <div class="row small"><span>Date</span><span>${new Date(sale.created_at).toLocaleString("en-PH")}</span></div>
+          <div class="row small"><span>Cashier</span><span>${sale.cashier_name || ""}</span></div>
+          <div class="row small"><span>Type</span><span class="badge">${sale.order_type === "take_out" ? "🥡 Take Out" : "🍽️ Dine In"}</span></div>
           <div class="divider"></div>
-          ${sale.items?.map(item => `
-            <div class="row"><span>${item.product_name} x${item.quantity}</span><span class="bold">₱${(item.subtotal).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
-          `).join('') || ''}
+          ${
+            sale.items
+              ?.map(
+                (item) => `
+            <div class="row"><span>${item.product_name} x${item.quantity}</span><span class="bold">₱${item.subtotal.toLocaleString("en-PH", { minimumFractionDigits: 2 })}</span></div>
+          `,
+              )
+              .join("") || ""
+          }
           <div class="divider"></div>
-          <div class="row"><span>Subtotal</span><span>₱${sale.subtotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
-          ${sale.discount > 0 ? `<div class="row"><span>Discount</span><span>-₱${sale.discount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>` : ''}
-          ${sale.tax_amount > 0 ? `<div class="row small"><span>VAT 12%</span><span>₱${sale.tax_amount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>` : ''}
+          <div class="row"><span>Subtotal</span><span>₱${sale.subtotal.toLocaleString("en-PH", { minimumFractionDigits: 2 })}</span></div>
+          ${sale.discount > 0 ? `<div class="row"><span>Discount</span><span>-₱${sale.discount.toLocaleString("en-PH", { minimumFractionDigits: 2 })}</span></div>` : ""}
+          ${sale.tax_amount > 0 ? `<div class="row small"><span>VAT 12%</span><span>₱${sale.tax_amount.toLocaleString("en-PH", { minimumFractionDigits: 2 })}</span></div>` : ""}
           <div class="divider"></div>
-          <div class="total-row"><span>TOTAL</span><span>₱${sale.total_amount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
+          <div class="total-row"><span>TOTAL</span><span>₱${sale.total_amount.toLocaleString("en-PH", { minimumFractionDigits: 2 })}</span></div>
           <div class="divider"></div>
-          ${sale.payment_method === 'cash' ? `
-            <div class="row"><span>Cash</span><span>₱${(sale.amount_tendered || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
-            <div class="row bold"><span>Change</span><span>₱${sale.change_due.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
-          ` : ''}
-          <div class="row small" style="text-transform:capitalize"><span>Payment</span><span>${sale.payment_method.replace('_', ' ')}</span></div>
+          ${
+            sale.payment_method === "cash"
+              ? `
+            <div class="row"><span>Cash</span><span>₱${(sale.amount_tendered || 0).toLocaleString("en-PH", { minimumFractionDigits: 2 })}</span></div>
+            <div class="row bold"><span>Change</span><span>₱${sale.change_due.toLocaleString("en-PH", { minimumFractionDigits: 2 })}</span></div>
+          `
+              : ""
+          }
+          <div class="row small" style="text-transform:capitalize"><span>Payment</span><span>${sale.payment_method.replace("_", " ")}</span></div>
           <div class="divider"></div>
           <div class="center footer">Thank you! ☕</div>
         </div>
@@ -165,7 +207,10 @@ function ReceiptModal({ sale, onClose }: { sale: Sale; onClose: () => void }) {
     `);
     printWindow.document.close();
     printWindow.focus();
-    setTimeout(() => { printWindow.print(); printWindow.close(); }, 300);
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 300);
   };
 
   return (
@@ -174,19 +219,23 @@ function ReceiptModal({ sale, onClose }: { sale: Sale; onClose: () => void }) {
         <div id="receipt-content" className="overflow-y-auto p-6 flex-1">
           <div className="text-center mb-4">
             <span className="text-3xl">☕</span>
-            <h2 className="font-display font-bold text-espresso-900 text-xl">BrewPOS</h2>
+            <h2 className="font-display font-bold text-espresso-900 text-xl">
+              BrewPOS
+            </h2>
             <p className="text-espresso-500 text-xs">Coffee Shop</p>
           </div>
           <div className="border-t border-dashed border-brew-200 py-3 space-y-1">
             <div className="flex justify-between text-xs text-espresso-500">
-              <span>Receipt #</span><span className="font-mono">{sale.sale_number}</span>
+              <span>Receipt #</span>
+              <span className="font-mono">{sale.sale_number}</span>
             </div>
             <div className="flex justify-between text-xs text-espresso-500">
               <span>Date</span>
-              <span>{new Date(sale.created_at).toLocaleString('en-PH')}</span>
+              <span>{new Date(sale.created_at).toLocaleString("en-PH")}</span>
             </div>
             <div className="flex justify-between text-xs text-espresso-500">
-              <span>Cashier</span><span>{sale.cashier_name}</span>
+              <span>Cashier</span>
+              <span>{sale.cashier_name}</span>
             </div>
           </div>
           <div className="border-t border-dashed border-brew-200 py-3 space-y-2">
@@ -201,36 +250,46 @@ function ReceiptModal({ sale, onClose }: { sale: Sale; onClose: () => void }) {
           </div>
           <div className="border-t border-dashed border-brew-200 pt-3 space-y-1">
             <div className="flex justify-between text-sm text-espresso-600">
-              <span>Subtotal</span><span>{fmt(sale.subtotal)}</span>
+              <span>Subtotal</span>
+              <span>{fmt(sale.subtotal)}</span>
             </div>
             {sale.discount > 0 && (
               <div className="flex justify-between text-sm text-green-600">
-                <span>Discount</span><span>-{fmt(sale.discount)}</span>
+                <span>Discount</span>
+                <span>-{fmt(sale.discount)}</span>
               </div>
             )}
             {sale.tax_amount > 0 && (
               <div className="flex justify-between text-sm text-espresso-600">
-                <span>VAT (12%)</span><span>{fmt(sale.tax_amount)}</span>
+                <span>VAT (12%)</span>
+                <span>{fmt(sale.tax_amount)}</span>
               </div>
             )}
             <div className="flex justify-between text-base font-bold text-espresso-900 pt-1">
-              <span>TOTAL</span><span>{fmt(sale.total_amount)}</span>
+              <span>TOTAL</span>
+              <span>{fmt(sale.total_amount)}</span>
             </div>
-            {sale.payment_method === 'cash' && (
+            {sale.payment_method === "cash" && (
               <>
                 <div className="flex justify-between text-sm text-espresso-600">
-                  <span>Cash</span><span>{fmt(sale.amount_tendered || 0)}</span>
+                  <span>Cash</span>
+                  <span>{fmt(sale.amount_tendered || 0)}</span>
                 </div>
                 <div className="flex justify-between text-sm font-semibold text-green-600">
-                  <span>Change</span><span>{fmt(sale.change_due)}</span>
+                  <span>Change</span>
+                  <span>{fmt(sale.change_due)}</span>
                 </div>
               </>
             )}
             <div className="flex justify-between text-sm text-espresso-500 capitalize">
-              <span>Payment</span><span>{sale.payment_method}</span>
+              <span>Payment</span>
+              <span>{sale.payment_method}</span>
             </div>
             <div className="flex justify-between text-sm text-espresso-500 capitalize">
-              <span>Order Type</span><span>{sale.order_type === 'take_out' ? '🥡 Take Out' : '🍽️ Dine In'}</span>
+              <span>Order Type</span>
+              <span>
+                {sale.order_type === "take_out" ? "🥡 Take Out" : "🍽️ Dine In"}
+              </span>
             </div>
           </div>
           <div className="text-center mt-4 text-xs text-espresso-400">
@@ -238,8 +297,10 @@ function ReceiptModal({ sale, onClose }: { sale: Sale; onClose: () => void }) {
           </div>
         </div>
         <div className="p-6 pt-0 flex gap-3 border-t border-brew-100">
-          <button onClick={handlePrint}
-            className="btn-secondary flex-1 text-sm">
+          <button
+            onClick={handlePrint}
+            className="btn-secondary flex-1 text-sm"
+          >
             🖨️ Print
           </button>
           <button onClick={onClose} className="btn-primary flex-1 text-sm">
@@ -252,34 +313,52 @@ function ReceiptModal({ sale, onClose }: { sale: Sale; onClose: () => void }) {
 }
 
 // ── Cart Panel (used in both mobile overlay and desktop sidebar) ──
-function CartPanel({ onClose, showClose }: { onClose?: () => void; showClose?: boolean }) {
+function CartPanel({
+  onClose,
+  showClose,
+}: {
+  onClose?: () => void;
+  showClose?: boolean;
+}) {
   const { user } = useAuth();
   const { showToast } = useToast();
   const {
-    items, subtotal, taxAmount, total, discount,
-    paymentMethod, setPaymentMethod, orderType, setOrderType, setDiscount,
-    removeItem, updateQty, clearCart, itemCount
+    items,
+    subtotal,
+    taxAmount,
+    total,
+    discount,
+    paymentMethod,
+    setPaymentMethod,
+    orderType,
+    setOrderType,
+    setDiscount,
+    removeItem,
+    updateQty,
+    clearCart,
+    itemCount,
   } = useCart();
 
   const [processing, setProcessing] = useState(false);
-  const [receipt, setReceipt]       = useState<Sale | null>(null);
-  const [amountTendered, setAmountTendered] = useState('');
-  const [notes, setNotes] = useState('');
+  const [receipt, setReceipt] = useState<Sale | null>(null);
+  const [amountTendered, setAmountTendered] = useState("");
+  const [notes, setNotes] = useState("");
 
-  const change = paymentMethod === 'cash'
-    ? Math.max(0, parseFloat(amountTendered || '0') - total)
-    : 0;
+  const change =
+    paymentMethod === "cash"
+      ? Math.max(0, parseFloat(amountTendered || "0") - total)
+      : 0;
 
   const handleCheckout = async () => {
     if (!items.length) return;
-    if (paymentMethod === 'cash') {
+    if (paymentMethod === "cash") {
       const tendered = parseFloat(amountTendered);
       if (isNaN(tendered) || tendered < total) {
         showToast(
-          paymentMethod === 'cash' && !amountTendered
-            ? 'Please enter the cash amount tendered.'
+          paymentMethod === "cash" && !amountTendered
+            ? "Please enter the cash amount tendered."
             : `Amount tendered (${fmt(tendered || 0)}) must be at least ${fmt(total)}.`,
-          'error'
+          "error",
         );
         return;
       }
@@ -287,14 +366,17 @@ function CartPanel({ onClose, showClose }: { onClose?: () => void; showClose?: b
     setProcessing(true);
     try {
       const sale = await api.sales.process({
-        items: items.map(i => ({ product_id: i.product.id, quantity: i.quantity })),
+        items: items.map((i) => ({
+          product_id: i.product.id,
+          quantity: i.quantity,
+        })),
         payment_method: paymentMethod,
         order_type: orderType,
         amount_tendered: parseFloat(amountTendered) || null,
         discount,
         notes,
       });
-      sale.items = items.map(i => ({
+      sale.items = items.map((i) => ({
         product_name: i.product.name,
         quantity: i.quantity,
         subtotal: i.product.price * i.quantity,
@@ -302,17 +384,28 @@ function CartPanel({ onClose, showClose }: { onClose?: () => void; showClose?: b
       sale.cashier_name = user?.name;
       setReceipt(sale);
       clearCart();
-      setAmountTendered('');
-      setNotes('');
+      setAmountTendered("");
+      setNotes("");
     } catch (err: any) {
-      showToast(err.isDemo ? err.message : 'Sale failed: ' + err.message, err.isDemo ? 'demo' : 'error');
+      showToast(
+        err.isDemo ? err.message : "Sale failed: " + err.message,
+        err.isDemo ? "demo" : "error",
+      );
     } finally {
       setProcessing(false);
     }
   };
 
   if (receipt) {
-    return <ReceiptModal sale={receipt} onClose={() => { setReceipt(null); onClose?.(); }} />;
+    return (
+      <ReceiptModal
+        sale={receipt}
+        onClose={() => {
+          setReceipt(null);
+          onClose?.();
+        }}
+      />
+    );
   }
 
   return (
@@ -320,17 +413,27 @@ function CartPanel({ onClose, showClose }: { onClose?: () => void; showClose?: b
       {/* Cart header */}
       <div className="p-4 border-b border-brew-100 flex items-center justify-between">
         <h2 className="font-display font-bold text-espresso-900">
-          Cart {itemCount > 0 && <span className="text-brew-500">({itemCount})</span>}
+          Cart{" "}
+          {itemCount > 0 && (
+            <span className="text-brew-500">({itemCount})</span>
+          )}
         </h2>
         <div className="flex items-center gap-3">
           {items.length > 0 && (
-            <button onClick={clearCart}
-              className="text-xs text-red-400 hover:text-red-600 transition-colors">
+            <button
+              onClick={clearCart}
+              className="text-xs text-red-400 hover:text-red-600 transition-colors"
+            >
               Clear all
             </button>
           )}
           {showClose && (
-            <button onClick={onClose} className="text-espresso-400 hover:text-espresso-700 text-xl">✕</button>
+            <button
+              onClick={onClose}
+              className="text-espresso-400 hover:text-espresso-700 text-xl"
+            >
+              ✕
+            </button>
           )}
         </div>
       </div>
@@ -345,11 +448,11 @@ function CartPanel({ onClose, showClose }: { onClose?: () => void; showClose?: b
           </div>
         ) : (
           <div>
-            {items.map(item => (
+            {items.map((item) => (
               <CartRow
                 key={item.product.id}
                 item={item}
-                onQty={qty => updateQty(item.product.id, qty)}
+                onQty={(qty) => updateQty(item.product.id, qty)}
                 onRemove={() => removeItem(item.product.id)}
               />
             ))}
@@ -362,15 +465,26 @@ function CartPanel({ onClose, showClose }: { onClose?: () => void; showClose?: b
         <div className="border-t border-brew-100 p-4 space-y-3">
           {/* Order type */}
           <div>
-            <label className="text-xs text-espresso-500 mb-1.5 block">Order Type</label>
+            <label className="text-xs text-espresso-500 mb-1.5 block">
+              Order Type
+            </label>
             <div className="grid grid-cols-2 gap-1.5">
-              {([{ key: 'dine_in', label: 'Dine In', icon: '🍽️' }, { key: 'take_out', label: 'Take Out', icon: '🥡' }] as { key: OrderType; label: string; icon: string }[]).map(t => (
-                <button key={t.key} onClick={() => setOrderType(t.key)}
-                  className={clsx('py-2 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1',
+              {(
+                [
+                  { key: "dine_in", label: "Dine In", icon: "🍽️" },
+                  { key: "take_out", label: "Take Out", icon: "🥡" },
+                ] as { key: OrderType; label: string; icon: string }[]
+              ).map((t) => (
+                <button
+                  key={t.key}
+                  onClick={() => setOrderType(t.key)}
+                  className={clsx(
+                    "py-2 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1",
                     orderType === t.key
-                      ? 'bg-brew-600 text-white'
-                      : 'bg-brew-50 text-brew-700 hover:bg-brew-100'
-                  )}>
+                      ? "bg-brew-600 text-white"
+                      : "bg-brew-50 text-brew-700 hover:bg-brew-100",
+                  )}
+                >
                   {t.icon} {t.label}
                 </button>
               ))}
@@ -379,34 +493,53 @@ function CartPanel({ onClose, showClose }: { onClose?: () => void; showClose?: b
 
           {/* Discount */}
           <div className="flex items-center gap-2">
-            <label className="text-xs text-espresso-500 w-16 shrink-0">Discount</label>
-            <input type="number" min="0" value={discount || ''}
-              onChange={e => setDiscount(parseFloat(e.target.value) || 0)}
-              className="input py-1.5 text-sm" placeholder="₱0.00" />
+            <label className="text-xs text-espresso-500 w-16 shrink-0">
+              Discount
+            </label>
+            <input
+              type="number"
+              min="0"
+              value={discount || ""}
+              onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+              className="input py-1.5 text-sm"
+              placeholder="₱0.00"
+            />
           </div>
 
           <div>
-            <label className="text-xs text-espresso-500 mb-1.5 block">Payment</label>
+            <label className="text-xs text-espresso-500 mb-1.5 block">
+              Payment
+            </label>
             <div className="grid grid-cols-3 gap-1.5">
-              {PAYMENT_METHODS.map(m => (
-                <button key={m.key} onClick={() => setPaymentMethod(m.key)}
-                  className={clsx('py-2 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1',
+              {PAYMENT_METHODS.map((m) => (
+                <button
+                  key={m.key}
+                  onClick={() => setPaymentMethod(m.key)}
+                  className={clsx(
+                    "py-2 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1",
                     paymentMethod === m.key
-                      ? 'bg-brew-600 text-white'
-                      : `${m.bg} ${m.color} hover:opacity-80`
-                  )}>
+                      ? "bg-brew-600 text-white"
+                      : `${m.bg} ${m.color} hover:opacity-80`,
+                  )}
+                >
                   {m.icon} {m.label}
                 </button>
               ))}
             </div>
           </div>
 
-          {paymentMethod === 'cash' && (
+          {paymentMethod === "cash" && (
             <div>
-              <input type="number" value={amountTendered}
-                onChange={e => setAmountTendered(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter') handleCheckout(); }}
-                className="input text-sm" placeholder="Cash tendered…" />
+              <input
+                type="number"
+                value={amountTendered}
+                onChange={(e) => setAmountTendered(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleCheckout();
+                }}
+                className="input text-sm"
+                placeholder="Payment Amount"
+              />
               {parseFloat(amountTendered) >= total && (
                 <p className="text-xs text-green-600 mt-1 font-semibold">
                   Change: {fmt(change)}
@@ -417,26 +550,33 @@ function CartPanel({ onClose, showClose }: { onClose?: () => void; showClose?: b
 
           <div className="space-y-1 pt-1">
             <div className="flex justify-between text-sm text-espresso-600">
-              <span>Subtotal</span><span>{fmt(subtotal)}</span>
+              <span>Subtotal</span>
+              <span>{fmt(subtotal)}</span>
             </div>
             {discount > 0 && (
               <div className="flex justify-between text-sm text-green-600">
-                <span>Discount</span><span>-{fmt(discount)}</span>
+                <span>Discount</span>
+                <span>-{fmt(discount)}</span>
               </div>
             )}
             {taxAmount > 0 && (
               <div className="flex justify-between text-sm text-espresso-500">
-                <span>VAT (12%)</span><span>{fmt(taxAmount)}</span>
+                <span>VAT (12%)</span>
+                <span>{fmt(taxAmount)}</span>
               </div>
             )}
             <div className="flex justify-between text-lg font-bold text-espresso-900 pt-1 border-t border-brew-100">
-              <span>Total</span><span className="text-brew-700">{fmt(total)}</span>
+              <span>Total</span>
+              <span className="text-brew-700">{fmt(total)}</span>
             </div>
           </div>
 
-          <button onClick={handleCheckout} disabled={processing}
-            className="btn-primary w-full py-3 text-base">
-            {processing ? 'Processing…' : `Charge ${fmt(total)}`}
+          <button
+            onClick={handleCheckout}
+            disabled={processing}
+            className="btn-primary w-full py-3 text-base"
+          >
+            {processing ? "Processing…" : `Charge ${fmt(total)}`}
           </button>
         </div>
       )}
@@ -446,23 +586,27 @@ function CartPanel({ onClose, showClose }: { onClose?: () => void; showClose?: b
 
 // ── Main POS page ─────────────────────────────────────────
 export default function POSPage() {
-  const [products,   setProducts]   = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [activeCategory, setActiveCategory] = useState<string>('all');
-  const [search,     setSearch]     = useState('');
-  const [cartOpen,   setCartOpen]   = useState(false);
+  const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [search, setSearch] = useState("");
+  const [cartOpen, setCartOpen] = useState(false);
 
   const { itemCount, total, addItem } = useCart();
 
   useEffect(() => {
     Promise.all([api.products.list(), api.categories.list()])
-      .then(([prods, cats]) => { setProducts(prods); setCategories(cats); })
+      .then(([prods, cats]) => {
+        setProducts(prods);
+        setCategories(cats);
+      })
       .catch(console.error);
   }, []);
 
-  const filteredProducts = products.filter(p => {
-    const matchCategory = activeCategory === 'all' || p.category_id === activeCategory;
-    const matchSearch   = p.name.toLowerCase().includes(search.toLowerCase());
+  const filteredProducts = products.filter((p) => {
+    const matchCategory =
+      activeCategory === "all" || p.category_id === activeCategory;
+    const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
     return matchCategory && matchSearch;
   });
 
@@ -476,29 +620,38 @@ export default function POSPage() {
             <input
               type="text"
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
               placeholder="Search products…"
               className="input"
             />
             <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
               <button
-                onClick={() => setActiveCategory('all')}
-                className={clsx('px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-colors',
-                  activeCategory === 'all'
-                    ? 'bg-brew-600 text-white'
-                    : 'bg-brew-50 text-brew-700 hover:bg-brew-100'
-                )}>
+                onClick={() => setActiveCategory("all")}
+                className={clsx(
+                  "px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-colors",
+                  activeCategory === "all"
+                    ? "bg-brew-600 text-white"
+                    : "bg-brew-50 text-brew-700 hover:bg-brew-100",
+                )}
+              >
                 All
               </button>
-              {categories.map(cat => (
-                <button key={cat.id}
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
                   onClick={() => setActiveCategory(cat.id)}
-                  className={clsx('px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-colors',
+                  className={clsx(
+                    "px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-colors",
                     activeCategory === cat.id
-                      ? 'text-white'
-                      : 'bg-brew-50 text-brew-700 hover:bg-brew-100'
+                      ? "text-white"
+                      : "bg-brew-50 text-brew-700 hover:bg-brew-100",
                   )}
-                  style={activeCategory === cat.id ? { backgroundColor: cat.color } : undefined}>
+                  style={
+                    activeCategory === cat.id
+                      ? { backgroundColor: cat.color }
+                      : undefined
+                  }
+                >
                   {cat.name}
                 </button>
               ))}
@@ -508,7 +661,7 @@ export default function POSPage() {
           {/* Product grid */}
           <div className="flex-1 overflow-y-auto p-3 sm:p-4 pb-24 lg:pb-4">
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
-              {filteredProducts.map(product => (
+              {filteredProducts.map((product) => (
                 <ProductCard
                   key={product.id}
                   product={product}
@@ -536,10 +689,13 @@ export default function POSPage() {
             onClick={() => setCartOpen(true)}
             className="lg:hidden fixed bottom-6 right-6 z-40 bg-brew-600 text-white
                        rounded-2xl shadow-lg px-5 py-3 flex items-center gap-3
-                       active:scale-95 transition-transform">
+                       active:scale-95 transition-transform"
+          >
             <span className="text-xl">🛒</span>
             <div className="text-left">
-              <p className="text-xs font-medium opacity-80">{itemCount} item{itemCount !== 1 ? 's' : ''}</p>
+              <p className="text-xs font-medium opacity-80">
+                {itemCount} item{itemCount !== 1 ? "s" : ""}
+              </p>
               <p className="text-sm font-bold">{fmt(total)}</p>
             </div>
           </button>
@@ -548,7 +704,10 @@ export default function POSPage() {
         {/* ── Mobile: Cart slide-up panel ── */}
         {cartOpen && (
           <div className="lg:hidden fixed inset-0 z-50">
-            <div className="absolute inset-0 bg-black/50" onClick={() => setCartOpen(false)} />
+            <div
+              className="absolute inset-0 bg-black/50"
+              onClick={() => setCartOpen(false)}
+            />
             <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl max-h-[85vh] flex flex-col overflow-hidden animate-slide-up">
               <div className="w-12 h-1.5 bg-brew-200 rounded-full mx-auto mt-3 mb-1" />
               <CartPanel onClose={() => setCartOpen(false)} showClose />
