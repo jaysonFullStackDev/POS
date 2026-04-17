@@ -97,59 +97,60 @@ function ReceiptModal({ sale, onClose }: { sale: Sale; onClose: () => void }) {
       <head>
         <title>Receipt ${sale.sale_number}</title>
         <style>
+          @page { size: 58mm auto; margin: 0; }
           * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { font-family: 'Courier New', Courier, monospace; background: white; width: 100%; max-width: 80mm; margin: 0 auto; padding: 4mm; }
-          .receipt { font-size: 16px; color: #000; line-height: 1.6; }
+          body {
+            font-family: 'Courier New', Courier, monospace;
+            background: white;
+            width: 58mm;
+            margin: 0;
+            padding: 3mm;
+            font-size: 11px;
+            color: #000;
+            line-height: 1.4;
+          }
           .center { text-align: center; }
           .bold { font-weight: 700; }
-          .row { display: flex; justify-content: space-between; padding: 3px 0; }
-          .divider { border-top: 2px dashed #000; margin: 10px 0; }
-          .total-row { font-size: 22px; font-weight: 900; padding: 6px 0; }
-          .info { font-size: 14px; color: #333; }
-          .item { font-size: 16px; }
-          .green { color: #000; }
-          .shop-name { font-size: 28px; font-weight: 900; font-family: Georgia, serif; letter-spacing: 1px; }
-          .shop-sub { font-size: 13px; color: #555; margin-top: 2px; }
-          .shop-icon { font-size: 36px; }
-          .badge { display: inline-block; padding: 3px 10px; border: 2px solid #000; border-radius: 6px; font-size: 14px; font-weight: 700; }
-          .footer { font-size: 14px; color: #555; margin-top: 14px; }
-          @media print {
-            body { width: 80mm; max-width: 80mm; padding: 2mm; }
-            @page { size: 80mm auto; margin: 0; }
-          }
+          .row { display: flex; justify-content: space-between; padding: 1px 0; font-size: 11px; }
+          .divider { border-top: 1px dashed #000; margin: 5px 0; }
+          .total-row { display: flex; justify-content: space-between; font-size: 15px; font-weight: 900; padding: 4px 0; }
+          .small { font-size: 9px; color: #444; }
+          .shop-name { font-size: 16px; font-weight: 900; font-family: Georgia, serif; }
+          .shop-icon { font-size: 20px; }
+          .shop-sub { font-size: 9px; color: #666; }
+          .badge { font-size: 9px; font-weight: 700; }
+          .footer { font-size: 9px; color: #666; margin-top: 6px; }
         </style>
       </head>
       <body>
-        <div class="receipt">
-          <div class="center" style="margin-bottom:14px">
-            <div class="shop-icon">☕</div>
-            <div class="shop-name">BrewPOS</div>
-            <div class="shop-sub">Coffee Shop</div>
-          </div>
-          <div class="divider"></div>
-          <div class="row info"><span>Receipt #</span><span>${sale.sale_number}</span></div>
-          <div class="row info"><span>Date</span><span>${new Date(sale.created_at).toLocaleString('en-PH')}</span></div>
-          <div class="row info"><span>Cashier</span><span>${sale.cashier_name || ''}</span></div>
-          <div class="row info"><span>Order Type</span><span class="badge">${sale.order_type === 'take_out' ? '🥡 Take Out' : '🍽️ Dine In'}</span></div>
-          <div class="divider"></div>
-          ${sale.items?.map(item => `
-            <div class="row item"><span>${item.product_name} × ${item.quantity}</span><span class="bold">₱${(item.subtotal).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
-          `).join('') || ''}
-          <div class="divider"></div>
-          <div class="row item"><span>Subtotal</span><span>₱${sale.subtotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
-          ${sale.discount > 0 ? `<div class="row item"><span>Discount</span><span>-₱${sale.discount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>` : ''}
-          ${sale.tax_amount > 0 ? `<div class="row info"><span>VAT (12%)</span><span>₱${sale.tax_amount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>` : ''}
-          <div class="divider"></div>
-          <div class="row total-row"><span>TOTAL</span><span>₱${sale.total_amount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
-          <div class="divider"></div>
-          ${sale.payment_method === 'cash' ? `
-            <div class="row item"><span>Cash</span><span>₱${(sale.amount_tendered || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
-            <div class="row item bold"><span>Change</span><span>₱${sale.change_due.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
-          ` : ''}
-          <div class="row info" style="text-transform:capitalize"><span>Payment</span><span>${sale.payment_method.replace('_', ' ')}</span></div>
-          <div class="divider"></div>
-          <div class="center footer">Thank you for your visit! ☕</div>
+        <div class="center" style="margin-bottom:6px">
+          <div class="shop-icon">☕</div>
+          <div class="shop-name">BrewPOS</div>
+          <div class="shop-sub">Coffee Shop</div>
         </div>
+        <div class="divider"></div>
+        <div class="row small"><span>Receipt #</span><span>${sale.sale_number}</span></div>
+        <div class="row small"><span>Date</span><span>${new Date(sale.created_at).toLocaleString('en-PH')}</span></div>
+        <div class="row small"><span>Cashier</span><span>${sale.cashier_name || ''}</span></div>
+        <div class="row small"><span>Type</span><span class="badge">${sale.order_type === 'take_out' ? '🥡 Take Out' : '🍽️ Dine In'}</span></div>
+        <div class="divider"></div>
+        ${sale.items?.map(item => `
+          <div class="row"><span>${item.product_name} x${item.quantity}</span><span class="bold">₱${(item.subtotal).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
+        `).join('') || ''}
+        <div class="divider"></div>
+        <div class="row"><span>Subtotal</span><span>₱${sale.subtotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
+        ${sale.discount > 0 ? `<div class="row"><span>Discount</span><span>-₱${sale.discount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>` : ''}
+        ${sale.tax_amount > 0 ? `<div class="row small"><span>VAT 12%</span><span>₱${sale.tax_amount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>` : ''}
+        <div class="divider"></div>
+        <div class="total-row"><span>TOTAL</span><span>₱${sale.total_amount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
+        <div class="divider"></div>
+        ${sale.payment_method === 'cash' ? `
+          <div class="row"><span>Cash</span><span>₱${(sale.amount_tendered || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
+          <div class="row bold"><span>Change</span><span>₱${sale.change_due.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></div>
+        ` : ''}
+        <div class="row small" style="text-transform:capitalize"><span>Payment</span><span>${sale.payment_method.replace('_', ' ')}</span></div>
+        <div class="divider"></div>
+        <div class="center footer">Thank you! ☕</div>
       </body>
       </html>
     `);
