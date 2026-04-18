@@ -1,56 +1,87 @@
 # ☕ BrewPOS — Coffee Shop POS System
 
-A multi-tenant coffee shop POS system with real-time orders, automatic inventory deduction, expense tracking, and P&L reporting. Features Google OAuth signup, role-based access, and support for GCash, Maya, GoTyme, and bank transfers.
+A full-stack, multi-tenant Point of Sale system built for small coffee shops. Real-time kitchen display, automatic inventory deduction, expense tracking, P&L reporting, and audit logging — all in one app.
 
-> **This repo contains the frontend only.** The backend API lives at [BrewPOS-Backend](https://github.com/jaysonFullStackDev/BrewPOS-Backend).
+### 🔗 [Live Demo](https://brewpos.vercel.app) · [Backend Repo](https://github.com/jaysonFullStackDev/BrewPOS-Backend)
+
+> **Try it now** — Login with `admin@brewpos.com` / `Admin@123` or sign up with Google to create your own shop.
+
+---
+
+## ✨ Key Features
+
+| Feature | Description |
+|---------|-------------|
+| 🛒 **Point of Sale** | Fast product search, category filters, cart management, dine-in/take-out toggle |
+| 👨‍🍳 **Kitchen Display** | Real-time Kanban board (New → Preparing → Ready) via WebSocket |
+| 📦 **Inventory** | Recipe-based auto-deduction, low stock alerts, supplier management |
+| 💰 **Accounting** | Expense tracking, P&L reports, monthly cash flow charts |
+| 📊 **Dashboard** | Today's revenue, transaction count, top products, low stock warnings |
+| 🧾 **Receipt Printing** | Thermal receipt format (58mm), opens in print-ready window |
+| 👥 **Staff Management** | Create staff with role-based access (Admin/Manager/Cashier) |
+| 📜 **Audit Log** | Tracks every action — who did what, when, from where |
+| 🔐 **Multi-tenant** | Each shop's data is fully isolated. Sign up with Google to create a new tenant |
+| 💳 **Payment Methods** | Cash, GCash, Maya, GoTyme, Bank Transfer |
 
 ---
 
 ## 🏗️ Architecture
 
-| Repo | Stack | Deploy |
-|------|-------|--------|
-| **[POS](https://github.com/jaysonFullStackDev/POS)** (this repo) | Next.js 14 · TypeScript · Tailwind CSS | Vercel |
-| **[BrewPOS-Backend](https://github.com/jaysonFullStackDev/BrewPOS-Backend)** | Express.js · Node.js · PostgreSQL | Vercel / Railway |
+```
+┌─────────────────┐     WebSocket      ┌─────────────────┐     SQL      ┌──────────────┐
+│   Next.js 14    │◄──────────────────►│   Express.js    │◄────────────►│  PostgreSQL   │
+│   (Vercel)      │     REST API       │   (Render)      │              │  (Supabase)   │
+│                 │◄──────────────────►│                 │              │              │
+└─────────────────┘                    └─────────────────┘              └──────────────┘
+     Frontend                              Backend                        Database
+```
 
-```
-frontend/
-├── app/
-│   ├── layout.tsx              - Root layout + global providers
-│   ├── globals.css             - Tailwind + custom design tokens
-│   ├── page.tsx                - Root redirect
-│   ├── login/page.tsx          - Login (email/password + Google OAuth)
-│   ├── setup/page.tsx          - Tenant setup wizard
-│   ├── dashboard/page.tsx      - Dashboard with charts
-│   ├── dashboard/users/page.tsx - Staff management
-│   ├── pos/page.tsx            - Point of Sale cashier screen
-│   ├── pos/history/page.tsx    - Sales history
-│   ├── kitchen/page.tsx        - Kitchen display system
-│   ├── inventory/page.tsx      - Inventory + suppliers
-│   ├── inventory/products/page.tsx - Product catalog
-│   ├── accounting/page.tsx     - Expenses & P&L
-│   ├── reports/page.tsx        - Analytics & reports
-│   └── audit/page.tsx          - Audit log viewer
-├── components/layout/
-│   ├── Sidebar.tsx             - Navigation + low stock badge
-│   └── AppShell.tsx            - Auth guard + layout wrapper
-├── store/
-│   ├── AuthContext.tsx          - Auth state (Google + email login)
-│   └── CartContext.tsx          - POS cart state
-├── lib/
-│   ├── api.ts                  - Typed API client with caching
-│   └── safeRedirect.ts         - Redirect URL allowlist
-└── types/
-    └── index.ts                - All TypeScript interfaces
-```
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Next.js 14 · TypeScript · Tailwind CSS · Recharts · Socket.IO Client |
+| Backend | Express.js · Node.js · Socket.IO · JWT · Helmet · express-validator |
+| Database | PostgreSQL (Supabase) · UUID primary keys · JSONB for audit details |
+| Auth | Google OAuth 2.0 · JWT access + refresh tokens · Refresh token rotation |
+| CI/CD | GitHub Actions → Lint → Test → Deploy (Vercel + Render) |
 
 ---
 
-## 🚀 Local Setup
+## 🔐 Security
+
+- **Rate limiting** — 5 login attempts/15min, 100 API requests/min per IP
+- **Input validation** — express-validator on all mutation endpoints
+- **Helmet.js** — Secure HTTP headers (XSS, clickjacking, MIME sniffing)
+- **JWT + Refresh tokens** — Access token (15min) + refresh token rotation with reuse detection
+- **Account lockout** — Locks after 5 failed login attempts
+- **Input sanitization** — Strips HTML/script tags from all string inputs
+- **Row-level locking** — `SELECT FOR UPDATE` prevents race conditions on inventory
+- **DB constraint** — `CHECK (stock_qty >= 0)` as safety net against overselling
+- **Audit logging** — Every mutation is logged with user, action, details, and IP
+
+---
+
+## 🔐 Role Permissions
+
+| Feature | Admin | Manager | Cashier |
+|---------|-------|---------|---------|
+| Dashboard | ✅ | ✅ | ✅ |
+| Point of Sale | ✅ | ✅ | ✅ |
+| Kitchen Display | ✅ | ✅ | ✅ |
+| Sales History | ✅ | ✅ | ✅ |
+| Inventory | ✅ | ✅ | ❌ |
+| Products | ✅ | ✅ | ❌ |
+| Accounting | ✅ | ✅ | ❌ |
+| Reports | ✅ | ✅ | ❌ |
+| Staff Management | ✅ | ❌ | ❌ |
+| Audit Log | ✅ | ❌ | ❌ |
+
+---
+
+## 🚀 Quick Start
 
 ### Prerequisites
-- **Node.js** v18+
-- **Backend API** running ([setup instructions](https://github.com/jaysonFullStackDev/BrewPOS-Backend))
+- Node.js v18+
+- Backend API running ([setup instructions](https://github.com/jaysonFullStackDev/BrewPOS-Backend))
 
 ### Install & Run
 
@@ -61,98 +92,85 @@ cp .env.example .env.local
 ```
 
 Edit `.env.local`:
-```
+```env
 NEXT_PUBLIC_API_URL=http://localhost:4000
 NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 ```
 
 ```bash
 npm run dev
-# → App running on http://localhost:3000
+# → http://localhost:3000
 ```
-
----
 
 ### Demo Credentials
 
-| Role     | Email                   | Password      |
-|----------|-------------------------|---------------|
-| Admin    | admin@brewpos.com       | Admin@123     |
-| Manager  | manager@brewpos.com     | Manager@123   |
-| Cashier  | cashier@brewpos.com     | Cashier@123   |
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | admin@brewpos.com | Admin@123 |
+| Manager | manager@brewpos.com | Manager@123 |
+| Cashier | cashier@brewpos.com | Cashier@123 |
 
-Or sign up with **Google** to create a new tenant.
-
----
-
-## 🔐 Role Permissions
-
-| Feature              | Admin | Manager | Cashier |
-|----------------------|-------|---------|---------|
-| Dashboard            | ✅    | ✅      | ✅      |
-| Point of Sale (POS)  | ✅    | ✅      | ✅      |
-| Kitchen Display      | ✅    | ✅      | ✅      |
-| Sales History        | ✅    | ✅      | ✅      |
-| Inventory            | ✅    | ✅      | ❌      |
-| Products             | ✅    | ✅      | ❌      |
-| Accounting           | ✅    | ✅      | ❌      |
-| Reports              | ✅    | ✅      | ❌      |
-| Staff Management     | ✅    | ❌      | ❌      |
-| Audit Log            | ✅    | ❌      | ❌      |
-| Delete Products      | ✅    | ❌      | ❌      |
+Or sign up with **Google** to create your own shop.
 
 ---
 
-## 📦 Tech Stack
+## 🧪 Testing & CI/CD
 
-| Layer      | Technology                                     |
-|------------|------------------------------------------------|
-| Framework  | Next.js 14 (App Router) · TypeScript           |
-| Styling    | Tailwind CSS                                   |
-| State      | React Context (Auth + Cart)                    |
-| Charts     | Recharts                                       |
-| Real-time  | Socket.IO Client                               |
-| Auth       | Google Identity Services (OAuth)               |
-| Caching    | Client-side response cache (30s TTL)           |
-
----
-
-## 🔒 Security Features
-
-- Redirect URL allowlist validation
-- JWT access tokens (7-day expiry) with auto-refresh
-- Refresh token rotation with reuse detection
-- Google OAuth for admin signup
-- Role-based route protection (AppShell)
-- XSS-safe — no dangerouslySetInnerHTML
-
----
-
-## 🌐 Deployment (Vercel)
-
-```bash
-cd frontend
-npm install -g vercel
-vercel
+### Backend Pipeline
+```
+Push → ESLint → Jest (21 tests) → Deploy to Render
 ```
 
-Set environment variables in Vercel dashboard:
-- `NEXT_PUBLIC_API_URL` → your backend URL
-- `NEXT_PUBLIC_GOOGLE_CLIENT_ID` → your Google OAuth client ID
+Tests cover:
+- **Integration** — Health endpoint, 404 handler
+- **Unit** — Input validation rules (login, sales, expenses)
+- **Unit** — Security middleware (XSS sanitization, account lockout)
+
+### Frontend Pipeline
+```
+Push → TypeScript Build → Deploy to Vercel
+```
 
 ---
 
-## 💰 Key Features
+## 📁 Project Structure
 
-- **Multi-tenant** — each company's data is fully isolated
-- **Google OAuth signup** — shop owners sign up with Google, then create staff accounts
-- **Tenant setup wizard** — company info + payment methods (GCash, Maya, GoTyme, Bank Transfer)
-- **Real-time kitchen display** — orders appear instantly via WebSocket
-- **Product preview cards** — click any product to see full details + recipe
-- **Low stock notifications** — badge on sidebar + detailed alert panel
-- **Category management** — create categories with custom colors
-- **Scrollable receipts** — handles large orders gracefully
+```
+frontend/
+├── app/
+│   ├── login/          - Email/password + Google OAuth
+│   ├── setup/          - Tenant setup wizard
+│   ├── dashboard/      - Charts + staff management
+│   ├── pos/            - POS screen + sales history
+│   ├── kitchen/        - Real-time kitchen display
+│   ├── inventory/      - Ingredients + products + suppliers
+│   ├── accounting/     - Expenses + P&L
+│   ├── reports/        - Analytics
+│   └── audit/          - Audit log viewer
+├── components/layout/  - Sidebar + AppShell (auth guard)
+├── store/              - Auth + Cart context
+├── lib/                - API client + utilities
+└── types/              - TypeScript interfaces
+```
 
 ---
 
-Built with ☕ for small coffee shop owners.
+## 🌐 Deployment
+
+**Frontend** → [Vercel](https://vercel.com) (free tier)
+**Backend** → [Render](https://render.com) (free tier)
+**Database** → [Supabase](https://supabase.com) (free tier)
+
+Set these environment variables:
+- `NEXT_PUBLIC_API_URL` → Backend URL
+- `NEXT_PUBLIC_GOOGLE_CLIENT_ID` → Google OAuth client ID
+
+---
+
+## 📄 License
+
+MIT
+
+---
+
+Built with ☕ by [Jayson](https://github.com/jaysonFullStackDev)
