@@ -39,15 +39,17 @@
   /* Primary button */
   .btn-primary {
     @apply bg-brew-600 hover:bg-brew-700 text-white font-semibold
-           px-4 py-2 rounded-xl transition-colors duration-150
-           disabled:opacity-50 disabled:cursor-not-allowed;
+           px-4 py-2 rounded-xl transition-all duration-150
+           disabled:opacity-50 disabled:cursor-not-allowed
+           active:scale-95;
   }
 
   /* Secondary button */
   .btn-secondary {
     @apply bg-brew-50 hover:bg-brew-100 text-brew-800 font-semibold
            px-4 py-2 rounded-xl border border-brew-200
-           transition-colors duration-150;
+           transition-all duration-150
+           active:scale-95;
   }
 
   /* Input field */
@@ -164,3 +166,71 @@
 .animate-ping-slow { animation: ping-slow 4s ease-out infinite; }
 .animate-ping-slower { animation: ping-slower 5s ease-out infinite; }
 .animate-slide-down { animation: slide-down 0.2s ease-out; }
+
+/* ── UI Animations ─────────────────────────────────────── */
+
+/* Modal open */
+@keyframes modal-in {
+  from { transform: scale(0.95); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+.animate-modal-in {
+  animation: modal-in 0.2s ease-out;
+}
+
+/* Fade in backdrop */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+/* Kitchen order card entrance */
+@keyframes card-in {
+  from { transform: translateY(12px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.animate-card-in {
+  animation: card-in 0.3s ease-out both;
+}
+
+/* Cart item add */
+@keyframes item-add {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.02); background-color: #f9eddf; }
+  100% { transform: scale(1); }
+}
+.animate-item-add {
+  animation: item-add 0.3s ease-out;
+}
+
+/* Number count highlight */
+@keyframes highlight {
+  0%   { color: #16a34a; }
+  100% { color: inherit; }
+}
+.animate-highlight {
+  animation: highlight 1s ease-out;
+}
+
+/* Skeleton shimmer */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #f9eddf 25%, #f1d9bc 50%, #f9eddf 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 12px;
+}
+
+/* Button press */
+.btn-press {
+  transition: transform 0.1s ease;
+}
+.btn-press:active {
+  transform: scale(0.95);
+}

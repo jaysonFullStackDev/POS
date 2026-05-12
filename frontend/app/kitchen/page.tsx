@@ -43,7 +43,7 @@ function OrderCard({ order, onAdvance }: { order: KitchenOrder; onAdvance: () =>
   };
 
   return (
-    <div className="bg-white rounded-2xl border-2 border-brew-100 p-4 shadow-sm">
+    <div className="bg-white rounded-2xl border-2 border-brew-100 p-4 shadow-sm animate-card-in">
       <div className="flex items-center justify-between mb-2">
         <span className="font-mono font-bold text-espresso-900 text-sm">
           {order.sale_number}

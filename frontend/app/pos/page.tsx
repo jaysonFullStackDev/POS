@@ -214,8 +214,8 @@ function ReceiptModal({ sale, onClose }: { sale: Sale; onClose: () => void }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm max-h-[90vh] flex flex-col animate-modal-in">
         <div id="receipt-content" className="overflow-y-auto p-6 flex-1">
           <div className="text-center mb-4">
             <span className="text-3xl">☕</span>
@@ -603,6 +603,8 @@ export default function POSPage() {
       .catch(console.error);
   }, []);
 
+  const loading = products.length === 0 && categories.length === 0;
+
   const filteredProducts = products.filter((p) => {
     const matchCategory =
       activeCategory === "all" || p.category_id === activeCategory;
@@ -660,20 +662,34 @@ export default function POSPage() {
 
           {/* Product grid */}
           <div className="flex-1 overflow-y-auto p-3 sm:p-4 pb-24 lg:pb-4">
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
-              {filteredProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onAdd={() => addItem(product)}
-                />
-              ))}
-            </div>
-            {filteredProducts.length === 0 && (
-              <div className="text-center py-16 text-espresso-400">
-                <p className="text-4xl mb-2">🔍</p>
-                <p>No products found</p>
+            {loading ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <div key={i} className="p-3 rounded-2xl border-2 border-brew-100 bg-white">
+                    <div className="skeleton w-10 h-10 mb-2" />
+                    <div className="skeleton h-4 w-3/4 mb-2" />
+                    <div className="skeleton h-4 w-1/2" />
+                  </div>
+                ))}
               </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
+                  {filteredProducts.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      onAdd={() => addItem(product)}
+                    />
+                  ))}
+                </div>
+                {filteredProducts.length === 0 && (
+                  <div className="text-center py-16 text-espresso-400">
+                    <p className="text-4xl mb-2">🔍</p>
+                    <p>No products found</p>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
